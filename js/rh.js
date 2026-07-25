@@ -20,6 +20,15 @@ const ORDEM_FAIXA_TEMPO = ['< 1 ano', '1-2 anos', '2-3 anos', '3-5 anos', '5-10 
 
 async function garantirDadosRh() {
   if (rhColaboradores !== null || rhDadosCarregando) return;
+  await buscarDadosRh();
+}
+
+async function recarregarDadosRh() {
+  rhDadosCarregando = false;
+  await buscarDadosRh();
+}
+
+async function buscarDadosRh() {
   rhDadosCarregando = true;
   mostrarCarregando(true);
 
