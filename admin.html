@@ -335,6 +335,31 @@
           <div class="secao-header"><h2>Top 10 colaboradores — mais cursos concluídos</h2></div>
           <div class="bar-list" id="rhTreinoTop"></div>
         </div>
+        <div class="secao">
+          <div class="secao-header"><h2>Buscar colaborador — cursos realizados</h2></div>
+          <div class="filtros" style="grid-template-columns:1fr;">
+            <div class="campo">
+              <label>Nome do colaborador</label>
+              <input type="text" id="rhTreinoBusca" placeholder="Digite o nome do colaborador..." oninput="buscarCursosColaborador()">
+            </div>
+          </div>
+          <div class="tabela-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Curso</th>
+                  <th>Área</th>
+                  <th>Nota</th>
+                  <th>Data</th>
+                  <th>Certificado</th>
+                </tr>
+              </thead>
+              <tbody id="rhTreinoBuscaCorpo"></tbody>
+            </table>
+          </div>
+          <div id="rhTreinoBuscaVazia" class="vazio">Digite um nome acima para ver os cursos realizados por esse colaborador.</div>
+        </div>
+
       </div>
     </div>
 
