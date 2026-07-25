@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Administrativo — Distribuidora Lopes</title>
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+<!-- TELA DE LOGIN -->
+<div class="tela-login" id="telaLogin">
+  <div class="card-login">
+    <img src="img/logo.png" alt="Distribuidora Lopes">
+    <h1>Painel Administrativo</h1>
+    <p class="subtitulo">Captação de Currículos</p>
+    <div class="erro-login" id="erroLogin">Senha incorreta.</div>
+    <input type="password" id="senhaLogin" placeholder="Senha de acesso">
+    <button class="botao botao-primario" onclick="fazerLogin()">Entrar</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app" hidden>
+
+  <div class="topo">
+    <div class="marca">
+      <img src="img/logo.png" alt="Distribuidora Lopes">
+      <span>Painel de Candidatos</span>
+    </div>
+    <button class="botao botao-secundario" onclick="sair()">Sair</button>
+  </div>
+
+  <div class="conteudo">
+
+    <!-- FILTROS -->
+    <div class="filtros">
+      <div class="campo">
+        <label>Nome / Email</label>
+        <input type="text" id="filtroTexto" placeholder="Buscar..." oninput="aplicarFiltros()">
+      </div>
+      <div class="campo">
+        <label>Cargo</label>
+        <select id="filtroCargo" onchange="aplicarFiltros()"><option value="">Todos</option></select>
+      </div>
+      <div class="campo">
+        <label>Estado</label>
+        <select id="filtroEstado" onchange="aplicarFiltros()"><option value="">Todos</option></select>
+      </div>
+      <div class="campo">
+        <label>Escolaridade</label>
+        <select id="filtroEscolaridade" onchange="aplicarFiltros()"><option value="">Todas</option></select>
+      </div>
+      <div class="campo">
+        <label>Disponibilidade</label>
+        <select id="filtroDisponibilidade" onchange="aplicarFiltros()"><option value="">Todas</option></select>
+      </div>
+      <div class="campo">
+        <label>Período</label>
+        <select id="filtroPeriodo" onchange="aplicarFiltros()">
+          <option value="">Todo o período</option>
+          <option value="7">Últimos 7 dias</option>
+          <option value="30">Últimos 30 dias</option>
+          <option value="90">Últimos 90 dias</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- CARDS DE RESUMO -->
+    <div class="cards-resumo">
+      <div class="card-resumo">
+        <div class="rotulo">Total de candidatos</div>
+        <div class="valor" id="resumoTotal">0</div>
+      </div>
+      <div class="card-resumo">
+        <div class="rotulo">Pretensão salarial média</div>
+        <div class="valor" id="resumoPretensao">R$ 0</div>
+      </div>
+      <div class="card-resumo">
+        <div class="rotulo">Idade média</div>
+        <div class="valor" id="resumoIdade">0</div>
+      </div>
+      <div class="card-resumo">
+        <div class="rotulo">Cargo mais buscado</div>
+        <div class="valor" id="resumoCargo">—</div>
+      </div>
+    </div>
+
+    <!-- GRÁFICOS -->
+    <div class="grade-graficos">
+      <div class="card-grafico">
+        <h3>Candidatos por cargo</h3>
+        <canvas id="graficoCargo"></canvas>
+      </div>
+      <div class="card-grafico">
+        <h3>Candidatos por faixa etária</h3>
+        <canvas id="graficoIdade"></canvas>
+      </div>
+      <div class="card-grafico">
+        <h3>Candidatos por faixa de pretensão salarial</h3>
+        <canvas id="graficoPretensao"></canvas>
+      </div>
+      <div class="card-grafico">
+        <h3>Envios por mês</h3>
+        <canvas id="graficoEnvios"></canvas>
+      </div>
+    </div>
+
+    <!-- TABELA DE CANDIDATOS -->
+    <div class="secao">
+      <div class="secao-header">
+        <h2>Candidatos</h2>
+        <button class="botao botao-secundario" onclick="exportarCsv()">Exportar CSV</button>
+      </div>
+      <div class="tabela-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Telefone</th>
+              <th>Cargo</th>
+              <th>Cidade/UF</th>
+              <th>Escolaridade</th>
+              <th>Idade</th>
+              <th>Pretensão</th>
+              <th>Disponibilidade</th>
+              <th>Currículo</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="corpoTabela"></tbody>
+        </table>
+      </div>
+      <div id="tabelaVazia" class="vazio" hidden>Nenhum candidato encontrado com os filtros atuais.</div>
+      <div class="paginacao" id="paginacao"></div>
+    </div>
+
+    <!-- GERENCIAMENTO DE VAGAS -->
+    <div class="secao">
+      <div class="secao-header">
+        <h2>Gerenciamento de vagas</h2>
+      </div>
+      <div class="form-inline">
+        <input type="text" id="novaVagaTitulo" placeholder="Título da nova vaga">
+        <button class="botao botao-primario" onclick="criarVaga()">Criar vaga</button>
+      </div>
+      <div class="tabela-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Status</th>
+              <th>Criada em</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="corpoTabelaVagas"></tbody>
+        </table>
+      </div>
+      <div id="vagasVazio" class="vazio" hidden>Nenhuma vaga cadastrada ainda.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL DE EDIÇÃO -->
+<div class="overlay-modal" id="modalEdicao" hidden>
+  <div class="modal">
+    <h2>Editar candidato</h2>
+    <input type="hidden" id="editId">
+    <div class="grade-campos">
+      <div class="campo"><label>Nome</label><input id="editNome"></div>
+      <div class="campo"><label>Telefone</label><input id="editTelefone"></div>
+      <div class="campo"><label>Email</label><input id="editEmail"></div>
+      <div class="campo"><label>Data de nascimento</label><input type="date" id="editDataNascimento"></div>
+      <div class="campo"><label>Estado</label><input id="editEstado"></div>
+      <div class="campo"><label>Cidade</label><input id="editCidade"></div>
+      <div class="campo"><label>Bairro</label><input id="editBairro"></div>
+      <div class="campo">
+        <label>Veículo próprio</label>
+        <select id="editVeiculoProprio"><option>Sim</option><option>Não</option></select>
+      </div>
+      <div class="campo"><label>Cargo</label><input id="editVaga"></div>
+      <div class="campo">
+        <label>Escolaridade</label>
+        <select id="editEscolaridade">
+          <option>Fundamental incompleto</option>
+          <option>Fundamental completo</option>
+          <option>Médio incompleto</option>
+          <option>Médio completo</option>
+          <option>Superior incompleto</option>
+          <option>Superior completo</option>
+          <option>Pós-graduação</option>
+        </select>
+      </div>
+      <div class="campo"><label>Pretensão salarial</label><input type="number" id="editPretensaoSalarial"></div>
+      <div class="campo">
+        <label>Disponibilidade</label>
+        <select id="editDisponibilidade">
+          <option>Imediata</option>
+          <option>Em até 15 dias</option>
+          <option>Em até 30 dias</option>
+          <option>A combinar</option>
+        </select>
+      </div>
+    </div>
+    <div class="acoes-modal">
+      <button class="botao botao-secundario" onclick="fecharModal()">Cancelar</button>
+      <button class="botao botao-primario" onclick="salvarEdicao()">Salvar alterações</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay-carregando" id="overlayCarregando">
+  <div class="spinner"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

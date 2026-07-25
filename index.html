@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trabalhe Conosco — Distribuidora Lopes</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="pagina">
+
+  <div class="cabecalho">
+    <img src="img/logo.png" alt="Distribuidora Lopes">
+    <h1>Trabalhe Conosco</h1>
+    <p>Cadastre seu currículo e faça parte do nosso banco de talentos.</p>
+  </div>
+
+  <!-- Barra de etapas -->
+  <div class="etapas" id="barraEtapas">
+    <div class="etapa ativa" data-etapa="1">
+      <div class="bola">1</div>
+      <span class="label">Dados pessoais</span>
+    </div>
+    <div class="etapa" data-etapa="2">
+      <div class="bola">2</div>
+      <span class="label">Perfil profissional</span>
+    </div>
+    <div class="etapa" data-etapa="3">
+      <div class="bola">3</div>
+      <span class="label">Currículo</span>
+    </div>
+  </div>
+
+  <div class="card" id="cardFormulario">
+    <div class="mensagem-erro" id="mensagemErro"></div>
+
+    <form id="formCandidato" novalidate>
+
+      <!-- Honeypot: campo invisível para bots -->
+      <div class="campo-honeypot">
+        <label for="hp_site">Não preencha este campo</label>
+        <input type="text" id="hp_site" name="honeypot" tabindex="-1" autocomplete="off">
+      </div>
+
+      <!-- ETAPA 1: Dados pessoais -->
+      <section class="passo ativo" data-passo="1">
+        <h2>Dados pessoais</h2>
+
+        <div class="campo">
+          <label for="nome">Nome completo</label>
+          <input type="text" id="nome" required>
+        </div>
+
+        <div class="linha-dupla">
+          <div class="campo">
+            <label for="telefone">Telefone</label>
+            <input type="tel" id="telefone" placeholder="(00) 00000-0000" required>
+          </div>
+          <div class="campo">
+            <label for="email">Email</label>
+            <input type="email" id="email" required>
+          </div>
+        </div>
+
+        <div class="campo">
+          <label>Data de nascimento</label>
+          <div class="linha-tripla">
+            <select id="nascDia" required></select>
+            <select id="nascMes" required></select>
+            <select id="nascAno" required></select>
+          </div>
+        </div>
+
+        <div class="linha-dupla">
+          <div class="campo">
+            <label for="estado">Estado</label>
+            <select id="estado" required></select>
+          </div>
+          <div class="campo">
+            <label for="cidade">Cidade</label>
+            <input type="text" id="cidade" required>
+          </div>
+        </div>
+
+        <div class="campo">
+          <label for="bairro">Bairro</label>
+          <input type="text" id="bairro" required>
+        </div>
+
+        <div class="campo">
+          <label for="veiculoProprio">Possui veículo próprio?</label>
+          <select id="veiculoProprio" required>
+            <option value="">Selecione</option>
+            <option value="Sim">Sim</option>
+            <option value="Não">Não</option>
+          </select>
+        </div>
+
+        <div class="acoes">
+          <span></span>
+          <button type="button" class="botao botao-primario" onclick="irParaEtapa(2)">Continuar</button>
+        </div>
+      </section>
+
+      <!-- ETAPA 2: Perfil profissional -->
+      <section class="passo" data-passo="2" hidden>
+        <h2>Perfil profissional</h2>
+
+        <div class="campo">
+          <label for="disponibilidade">Disponibilidade para início</label>
+          <select id="disponibilidade" required>
+            <option value="">Selecione</option>
+            <option value="Imediata">Imediata</option>
+            <option value="Em até 15 dias">Em até 15 dias</option>
+            <option value="Em até 30 dias">Em até 30 dias</option>
+            <option value="A combinar">A combinar</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="vaga">Vaga de interesse</label>
+          <select id="vaga" required>
+            <option value="">Carregando vagas...</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="escolaridade">Nível de escolaridade</label>
+          <select id="escolaridade" required>
+            <option value="">Selecione</option>
+            <option>Fundamental incompleto</option>
+            <option>Fundamental completo</option>
+            <option>Médio incompleto</option>
+            <option>Médio completo</option>
+            <option>Superior incompleto</option>
+            <option>Superior completo</option>
+            <option>Pós-graduação</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="pretensaoSalarial">Pretensão salarial (R$)</label>
+          <input type="number" id="pretensaoSalarial" min="0" step="0.01" required>
+        </div>
+
+        <div class="acoes">
+          <button type="button" class="botao botao-secundario" onclick="irParaEtapa(1)">Voltar</button>
+          <button type="button" class="botao botao-primario" onclick="irParaEtapa(3)">Continuar</button>
+        </div>
+      </section>
+
+      <!-- ETAPA 3: Currículo -->
+      <section class="passo" data-passo="3" hidden>
+        <h2>Currículo</h2>
+
+        <div class="campo">
+          <label for="arquivo">Anexe seu currículo</label>
+          <input type="file" id="arquivo" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" required>
+          <p class="texto-ajuda">Formatos aceitos: PDF, Word ou imagem. Tamanho máximo: 10MB.</p>
+        </div>
+
+        <div class="campo-consentimento">
+          <input type="checkbox" id="consentimento" required>
+          <label for="consentimento">
+            Autorizo o uso dos meus dados pessoais pela Distribuidora Lopes para fins de
+            recrutamento e seleção, conforme a Lei Geral de Proteção de Dados (LGPD).
+          </label>
+        </div>
+
+        <div class="acoes">
+          <button type="button" class="botao botao-secundario" onclick="irParaEtapa(2)">Voltar</button>
+          <button type="submit" class="botao botao-primario" id="botaoEnviar">Enviar cadastro</button>
+        </div>
+      </section>
+
+    </form>
+
+    <!-- Tela de sucesso -->
+    <div class="tela-sucesso" id="telaSucesso" hidden>
+      <div class="icone-sucesso">&#10003;</div>
+      <h2>Cadastro enviado com sucesso!</h2>
+      <p>Enviamos um email de confirmação para você. Nossa equipe entrará em contato caso surja uma oportunidade compatível com seu perfil.</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="overlay-carregando" id="overlayCarregando">
+  <div class="spinner"></div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/script.js"></script>
+</body>
+</html>
