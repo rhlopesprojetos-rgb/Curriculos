@@ -56,12 +56,10 @@ async function buscarDadosRh() {
 
 function renderizarTudoRh() {
   if (!rhColaboradores || rhColaboradores.length === 0) return;
-  renderizarVisaoGeralRh();
-  renderizarColaboradoresRh();
-  renderizarRetencaoRh();
-  renderizarTreinamentosRh();
+  popularFiltrosRh();
   rhListaSomenteAtivos = false;
-  renderizarListaRh();
+  aplicarFiltrosRh();
+  renderizarTreinamentosRh();
 }
 
 // ------------------------- HELPERS DE DATA -------------------------
@@ -74,6 +72,70 @@ function rhParseData(valor) {
 
 function rhDiasEntre(a, b) {
   return Math.round((b.getTime() - a.getTime()) / 86400000);
+}
+
+// ------------------------- FILTROS COMPARTILHADOS -------------------------
+
+function obterColaboradoresFiltrados() {
+  if (!rhColaboradores) return [];
+
+  const unidade = document.getElementById('rhFiltroUnidade').value;
+  const departamento = document.getElementById('rhFiltroDepartamento').value;
+  const situacao = document.getElementById('rhFiltroSituacao').value;
+  const sexo = document.getElementById('rhFiltroSexo').value;
+  const geracao = document.getElementById('rhFiltroGeracao').value;
+  const anoDe = document.getElementById('rhFiltroAnoDe').value;
+  const anoAte = document.getElementById('rhFiltroAnoAte').value;
+
+  return rhColaboradores.filter(c => {
+    if (unidade && c.Unidade !== unidade) return false;
+    if (departamento && c.Departamento !== departamento) return false;
+    if (situacao && (c['Situação'] || '').trim() !== situacao) return false;
+    if (sexo && (c.Sexo || 'Não informado') !== sexo) return false;
+    if (geracao && c._geracao !== geracao) return false;
+    if (anoDe && c._anoAdmissao && c._anoAdmissao < Number(anoDe)) return false;
+    if (anoAte && c._anoAdmissao && c._anoAdmissao > Number(anoAte)) return false;
+    return true;
+  });
+}
+
+function popularFiltrosRh() {
+  if (!rhColaboradores) return;
+
+  const unidades = [...new Set(rhColaboradores.map(c => c.Unidade).filter(Boolean))].sort();
+  const departamentos = [...new Set(rhColaboradores.map(c => c.Departamento).filter(Boolean))].sort();
+  const sexos = [...new Set(rhColaboradores.map(c => c.Sexo || 'Não informado'))].sort();
+  const geracoes = [...new Set(rhColaboradores.map(c => c._geracao).filter(Boolean))].sort();
+
+  preencherSelectFiltroRh('rhFiltroUnidade', unidades, 'Todas');
+  preencherSelectFiltroRh('rhFiltroDepartamento', departamentos, 'Todos');
+  preencherSelectFiltroRh('rhFiltroSexo', sexos, 'Todos');
+  preencherSelectFiltroRh('rhFiltroGeracao', geracoes, 'Todas');
+}
+
+function preencherSelectFiltroRh(id, opcoes, rotuloPadrao) {
+  const sel = document.getElementById(id);
+  const valorAtual = sel.value;
+  sel.innerHTML = `<option value="">${rotuloPadrao}</option>` +
+    opcoes.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
+  sel.value = valorAtual;
+}
+
+function aplicarFiltrosRh() {
+  if (!rhColaboradores) return;
+  renderizarVisaoGeralRh();
+  renderizarColaboradoresRh();
+  renderizarRetencaoRh();
+  renderizarListaRh();
+}
+
+function limparFiltrosRh() {
+  ['rhFiltroUnidade', 'rhFiltroDepartamento', 'rhFiltroSituacao', 'rhFiltroSexo', 'rhFiltroGeracao'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('rhFiltroAnoDe').value = '';
+  document.getElementById('rhFiltroAnoAte').value = '';
+  aplicarFiltrosRh();
 }
 
 // ------------------------- VISÃO GERAL -------------------------
@@ -89,7 +151,7 @@ function rhHeadcountNoFimDoAno(colaboradores, ano) {
 }
 
 function renderizarVisaoGeralRh() {
-  const colaboradores = rhColaboradores;
+  const colaboradores = obterColaboradoresFiltrados();
   const anoAtual = new Date().getFullYear();
   const ativos = colaboradores.filter(c => c._ativo);
 
@@ -184,8 +246,9 @@ function renderizarBarraContagem(canvasId, chartRef, contagem, setRef) {
 // ------------------------- COLABORADORES -------------------------
 
 function renderizarColaboradoresRh() {
-  const ativos = rhColaboradores.filter(c => c._ativo);
-  const desligados = rhColaboradores.filter(c => !c._ativo);
+  const base = obterColaboradoresFiltrados();
+  const ativos = base.filter(c => c._ativo);
+  const desligados = base.filter(c => !c._ativo);
 
   // Medalhistas
   const topTempo = ativos
@@ -271,7 +334,7 @@ function renderizarColaboradoresRh() {
 // ------------------------- RETENÇÃO & TURNOVER -------------------------
 
 function renderizarRetencaoRh() {
-  const colaboradores = rhColaboradores;
+  const colaboradores = obterColaboradoresFiltrados();
   const anoAtual = new Date().getFullYear();
 
   const anos = [...new Set(colaboradores.map(c => c._anoAdmissao).filter(a => a > 0))].sort();
@@ -363,7 +426,7 @@ function renderizarListaRh() {
 
   const busca = document.getElementById('rhListaBusca').value.trim().toLowerCase();
 
-  rhListaFiltrados = rhColaboradores.filter(c => {
+  rhListaFiltrados = obterColaboradoresFiltrados().filter(c => {
     if (rhListaSomenteAtivos && !c._ativo) return false;
     if (busca && !(c.Nome || '').toLowerCase().includes(busca)) return false;
     return true;
