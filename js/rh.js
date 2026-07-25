@@ -547,6 +547,9 @@ function buscarCursosColaborador() {
   const encontrados = (rhCursos || [])
     .filter(c => (c['Nome do colaborador'] || '').toLowerCase().includes(busca))
     .sort((a, b) => {
+      const nomeA = (a['Nome do colaborador'] || '').toLowerCase();
+      const nomeB = (b['Nome do colaborador'] || '').toLowerCase();
+      if (nomeA !== nomeB) return nomeA.localeCompare(nomeB);
       const da = rhParseData(a['Data de realização']);
       const db = rhParseData(b['Data de realização']);
       return (db ? db.getTime() : 0) - (da ? da.getTime() : 0);
@@ -562,6 +565,7 @@ function buscarCursosColaborador() {
   vazio.hidden = true;
   corpo.innerHTML = encontrados.map(c => `
     <tr>
+      <td>${escapeHtml(c['Nome do colaborador'] || '')}</td>
       <td>${escapeHtml(c['Nome do curso'] || '')}</td>
       <td>${escapeHtml(c['Área do curso'] || '')}</td>
       <td>${c['Nota obtida'] ?? ''}</td>
