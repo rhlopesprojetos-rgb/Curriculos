@@ -12,6 +12,7 @@ const RH_LISTA_POR_PAGINA = 15;
 let chVisaoHc, chVisaoAdm, chVisaoUnidade, chVisaoDepto, chVisaoCargo;
 let chColabTempo, chColabGeracao, chColabSexo, chColabDecisao;
 let chTurnoverAno;
+let chTreinoArea, chTreinoCertificado, chTreinoDepto, chTreinoNota, chTreinoEvolucao;
 
 const ORDEM_FAIXA_TEMPO = ['< 1 ano', '1-2 anos', '2-3 anos', '3-5 anos', '5-10 anos', '10-15 anos', '15-20 anos', '20+ anos'];
 
@@ -49,6 +50,7 @@ function renderizarTudoRh() {
   renderizarVisaoGeralRh();
   renderizarColaboradoresRh();
   renderizarRetencaoRh();
+  renderizarTreinamentosRh();
   rhListaSomenteAtivos = false;
   renderizarListaRh();
 }
@@ -410,4 +412,120 @@ function mudarPaginaListaRh(p) {
   if (p < 1 || p > totalPaginas) return;
   rhListaPagina = p;
   renderizarTabelaListaRh();
+}
+
+// ------------------------- TREINAMENTOS -------------------------
+
+function renderizarTreinamentosRh() {
+  const cursos = rhCursos || [];
+
+  document.getElementById('rhTreinoKpis').innerHTML = cursosVazio(cursos)
+    ? '<p class="vazio">Nenhum curso registrado ainda na planilha de cursos.</p>'
+    : '';
+
+  if (cursosVazio(cursos)) {
+    ['chTreinoArea', 'chTreinoCertificado', 'chTreinoDepto', 'chTreinoNota', 'chTreinoEvolucao'].forEach(id => {
+      const c = { chTreinoArea, chTreinoCertificado, chTreinoDepto, chTreinoNota, chTreinoEvolucao }[id];
+      if (c) c.destroy();
+    });
+    document.getElementById('rhTreinoTop').innerHTML = '';
+    return;
+  }
+
+  // KPIs
+  const totalCursos = cursos.length;
+  const notas = cursos.map(c => Number(c['Nota obtida'])).filter(n => !isNaN(n));
+  const notaMedia = notas.length ? (notas.reduce((a, b) => a + b, 0) / notas.length).toFixed(1) : '—';
+  const comCertificado = cursos.filter(c => (c['Certificado gerado'] || '').toString().trim().toLowerCase() === 'sim').length;
+  const taxaCertificado = totalCursos ? ((comCertificado / totalCursos) * 100).toFixed(0) : 0;
+  const colaboradoresUnicos = new Set(cursos.map(c => (c['Nome do colaborador'] || '').trim()).filter(Boolean)).size;
+
+  document.getElementById('rhTreinoKpis').innerHTML = `
+    <div class="card-resumo"><div class="rotulo">Cursos concluídos</div><div class="valor">${totalCursos}</div></div>
+    <div class="card-resumo"><div class="rotulo">Nota média geral</div><div class="valor">${notaMedia}</div></div>
+    <div class="card-resumo"><div class="rotulo">Taxa de certificado emitido</div><div class="valor">${taxaCertificado}%</div></div>
+    <div class="card-resumo"><div class="rotulo">Colaboradores treinados</div><div class="valor">${colaboradoresUnicos}</div></div>
+  `;
+
+  // Cursos por área
+  renderizarBarraContagem('chTreinoArea', chTreinoArea, contarPorCampo(cursos, 'Área do curso'), r => (chTreinoArea = r));
+
+  // Certificado emitido
+  const porCertificado = contarPorCampo(cursos, 'Certificado gerado');
+  if (chTreinoCertificado) chTreinoCertificado.destroy();
+  chTreinoCertificado = new Chart(document.getElementById('chTreinoCertificado'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(porCertificado),
+      datasets: [{ data: Object.values(porCertificado), backgroundColor: coresGrafico(Object.keys(porCertificado).length) }]
+    },
+    options: opcoesGraficoBase(true)
+  });
+
+  // Cursos por departamento
+  renderizarBarraContagem('chTreinoDepto', chTreinoDepto, contarPorCampo(cursos, 'Departamento do colaborador'), r => (chTreinoDepto = r));
+
+  // Nota média por curso (top 15 cursos com mais realizações)
+  const porCurso = {};
+  cursos.forEach(c => {
+    const nome = (c['Nome do curso'] || 'Não informado').toString().trim();
+    const nota = Number(c['Nota obtida']);
+    if (!porCurso[nome]) porCurso[nome] = { soma: 0, qtd: 0, contagem: 0 };
+    porCurso[nome].contagem++;
+    if (!isNaN(nota)) {
+      porCurso[nome].soma += nota;
+      porCurso[nome].qtd++;
+    }
+  });
+  const cursosTop = Object.entries(porCurso)
+    .sort((a, b) => b[1].contagem - a[1].contagem)
+    .slice(0, 15)
+    .map(([nome, dados]) => [nome, dados.qtd ? Number((dados.soma / dados.qtd).toFixed(1)) : 0]);
+
+  if (chTreinoNota) chTreinoNota.destroy();
+  chTreinoNota = new Chart(document.getElementById('chTreinoNota'), {
+    type: 'bar',
+    data: {
+      labels: cursosTop.map(x => x[0]),
+      datasets: [{ data: cursosTop.map(x => x[1]), backgroundColor: coresGrafico(cursosTop.length) }]
+    },
+    options: Object.assign({}, opcoesGraficoBase(false), { indexAxis: 'y', scales: { x: { beginAtZero: true, max: 10 } } })
+  });
+
+  // Evolução por mês
+  const porMes = {};
+  cursos.forEach(c => {
+    const data = rhParseData(c['Data de realização']);
+    if (!data) return;
+    const chave = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`;
+    porMes[chave] = (porMes[chave] || 0) + 1;
+  });
+  const mesesOrdenados = Object.keys(porMes).sort();
+
+  if (chTreinoEvolucao) chTreinoEvolucao.destroy();
+  chTreinoEvolucao = new Chart(document.getElementById('chTreinoEvolucao'), {
+    type: 'line',
+    data: {
+      labels: mesesOrdenados,
+      datasets: [{ data: mesesOrdenados.map(m => porMes[m]), borderColor: '#1a2744', backgroundColor: 'rgba(26,39,68,0.1)', fill: true, tension: 0.25 }]
+    },
+    options: opcoesGraficoBase(false)
+  });
+
+  // Top 10 colaboradores por cursos concluídos
+  const porColaborador = contarPorCampo(cursos, 'Nome do colaborador');
+  const top10Colab = Object.entries(porColaborador).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  const maiorValorColab = top10Colab.length ? top10Colab[0][1] : 1;
+
+  document.getElementById('rhTreinoTop').innerHTML = top10Colab.map(([nome, qtd]) => `
+    <div class="bar-row">
+      <div class="bar-lbl">${escapeHtml(nome)}</div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${(qtd / maiorValorColab) * 100}%"></div></div>
+      <div class="bar-v">${qtd}</div>
+    </div>
+  `).join('');
+}
+
+function cursosVazio(cursos) {
+  return !cursos || cursos.length === 0;
 }
