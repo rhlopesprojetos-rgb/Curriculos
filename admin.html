@@ -36,6 +36,7 @@
         <div class="nav-item" data-pagina="rhColab" onclick="irParaPaginaApp('rhColab')">👥 Colaboradores</div>
         <div class="nav-item" data-pagina="rhRetencao" onclick="irParaPaginaApp('rhRetencao')">📈 Retenção &amp; Turnover</div>
         <div class="nav-item" data-pagina="rhLista" onclick="irParaPaginaApp('rhLista')">📄 Lista de Pessoas</div>
+        <div class="nav-item" data-pagina="rhTreinamentos" onclick="irParaPaginaApp('rhTreinamentos')">🎓 Treinamentos</div>
       </nav>
       <div class="rodape-sidebar">
         <button class="botao botao-secundario" onclick="sair()" style="width:100%">Sair</button>
@@ -297,6 +298,42 @@
           </div>
           <div id="rhListaVazia" class="vazio" hidden>Nenhum colaborador encontrado.</div>
           <div class="paginacao" id="rhListaPaginacao"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PÁGINA: RH — TREINAMENTOS -->
+    <div class="pagina-app" id="pg-rhTreinamentos">
+      <div class="conteudo">
+        <div class="secao-header"><h2>Treinamentos</h2></div>
+        <div class="cards-resumo" id="rhTreinoKpis"></div>
+        <div class="grade-graficos">
+          <div class="card-grafico">
+            <h3>Cursos por área</h3>
+            <canvas id="chTreinoArea"></canvas>
+          </div>
+          <div class="card-grafico">
+            <h3>Certificado emitido</h3>
+            <canvas id="chTreinoCertificado"></canvas>
+          </div>
+        </div>
+        <div class="grade-graficos">
+          <div class="card-grafico">
+            <h3>Cursos por departamento</h3>
+            <canvas id="chTreinoDepto"></canvas>
+          </div>
+          <div class="card-grafico">
+            <h3>Nota média por curso</h3>
+            <canvas id="chTreinoNota"></canvas>
+          </div>
+        </div>
+        <div class="secao">
+          <div class="secao-header"><h2>Conclusões por mês</h2></div>
+          <div style="height:220px"><canvas id="chTreinoEvolucao"></canvas></div>
+        </div>
+        <div class="secao">
+          <div class="secao-header"><h2>Top 10 colaboradores — mais cursos concluídos</h2></div>
+          <div class="bar-list" id="rhTreinoTop"></div>
         </div>
       </div>
     </div>
