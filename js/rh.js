@@ -529,3 +529,44 @@ function renderizarTreinamentosRh() {
 function cursosVazio(cursos) {
   return !cursos || cursos.length === 0;
 }
+
+// ------------------------- BUSCA DE COLABORADOR (CURSOS) -------------------------
+
+function buscarCursosColaborador() {
+  const busca = document.getElementById('rhTreinoBusca').value.trim().toLowerCase();
+  const corpo = document.getElementById('rhTreinoBuscaCorpo');
+  const vazio = document.getElementById('rhTreinoBuscaVazia');
+
+  if (!busca) {
+    corpo.innerHTML = '';
+    vazio.hidden = false;
+    vazio.textContent = 'Digite um nome acima para ver os cursos realizados por esse colaborador.';
+    return;
+  }
+
+  const encontrados = (rhCursos || [])
+    .filter(c => (c['Nome do colaborador'] || '').toLowerCase().includes(busca))
+    .sort((a, b) => {
+      const da = rhParseData(a['Data de realização']);
+      const db = rhParseData(b['Data de realização']);
+      return (db ? db.getTime() : 0) - (da ? da.getTime() : 0);
+    });
+
+  if (!encontrados.length) {
+    corpo.innerHTML = '';
+    vazio.hidden = false;
+    vazio.textContent = 'Nenhum curso encontrado para esse colaborador.';
+    return;
+  }
+
+  vazio.hidden = true;
+  corpo.innerHTML = encontrados.map(c => `
+    <tr>
+      <td>${escapeHtml(c['Nome do curso'] || '')}</td>
+      <td>${escapeHtml(c['Área do curso'] || '')}</td>
+      <td>${c['Nota obtida'] ?? ''}</td>
+      <td>${c._dataFmt || ''}</td>
+      <td>${escapeHtml(c['Certificado gerado'] || '')}</td>
+    </tr>
+  `).join('');
+}
