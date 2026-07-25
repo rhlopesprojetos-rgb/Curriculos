@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const tokenSalvo = localStorage.getItem(CHAVE_STORAGE);
   if (tokenSalvo) {
     TOKEN = tokenSalvo;
-    mostrarApp();
+    mostrarApp(false);
   }
 
   document.getElementById('senhaLogin').addEventListener('keydown', e => {
@@ -40,7 +40,8 @@ async function fazerLogin() {
     if (resp.success) {
       TOKEN = resp.token;
       localStorage.setItem(CHAVE_STORAGE, TOKEN);
-      mostrarApp();
+      candidatosOriginais = resp.candidatos || []; // já veio junto do login
+      mostrarApp(true);
     } else {
       erroEl.textContent = resp.message || 'Senha incorreta.';
       erroEl.classList.add('visivel');
@@ -61,10 +62,10 @@ function sair() {
   document.getElementById('senhaLogin').value = '';
 }
 
-function mostrarApp() {
+function mostrarApp(candidatosJaCarregados) {
   document.getElementById('telaLogin').hidden = true;
   document.getElementById('app').hidden = false;
-  carregarTudo();
+  inicializarPainel(candidatosJaCarregados);
 }
 
 // ------------------------- CHAMADAS AO BACKEND -------------------------
@@ -86,30 +87,37 @@ async function chamarBackend(payload, tentativas = 3) {
   }
 }
 
-async function carregarTudo() {
+async function carregarCandidatos() {
+  const resp = await chamarBackend({ action: 'listCandidatos' });
+  if (!resp.success) {
+    alert(resp.message || 'Sessão expirada ou inválida. Faça login novamente.');
+    sair();
+    return false;
+  }
+  candidatosOriginais = resp.candidatos || [];
+  return true;
+}
+
+async function carregarVagas() {
+  const resp = await chamarBackend({ action: 'listVagasAdmin' });
+  if (resp.success) {
+    vagas = resp.vagas || [];
+    renderizarVagas();
+  }
+}
+
+// Ponto único de entrada para montar o painel, com o mínimo de chamadas
+// possível ao Apps Script (nunca duas ao mesmo tempo) — chamadas simultâneas
+// ao mesmo Web App do Apps Script são a causa das falhas intermitentes.
+async function inicializarPainel(candidatosJaCarregados) {
   mostrarCarregando(true);
   try {
-      // Chamadas sequenciais (não simultâneas): Web Apps do Apps Script podem
-    // falhar de forma intermitente quando recebem 2 requisições ao mesmo tempo.
-    const respCandidatos = await chamarBackend({ action: 'listCandidatos' });
-    if (!respCandidatos.success) {
-      alert(respCandidatos.message || 'Sessão expirada ou inválida. Faça login novamente.');
-      sair();
-      return;
+    if (!candidatosJaCarregados) {
+      const ok = await carregarCandidatos();
+      if (!ok) return;
     }
-
-    const respVagas = await chamarBackend({ action: 'listVagasAdmin' });
-    if (!respVagas.success) {
-      alert(respVagas.message || 'Sessão expirada ou inválida. Faça login novamente.');
-      sair();
-      return;
-    }
-
-    candidatosOriginais = respCandidatos.candidatos || [];
-    vagas = respVagas.vagas || [];
-
+    await carregarVagas();
     popularFiltros();
-    renderizarVagas();
     aplicarFiltros();
   } catch (err) {
     alert('Erro ao carregar dados do painel. Verifique sua conexão.');
@@ -166,7 +174,11 @@ function aplicarFiltros() {
 
   paginaAtual = 1;
   renderizarResumo();
-  renderizarGraficos();
+  try {
+    renderizarGraficos();
+  } catch (err) {
+    console.warn('Erro ao renderizar gráficos:', err);
+  }
   renderizarTabela();
 }
 
@@ -196,6 +208,10 @@ function renderizarResumo() {
 // ------------------------- GRÁFICOS -------------------------
 
 function renderizarGraficos() {
+  if (typeof Chart === 'undefined') {
+    console.warn('Chart.js não carregou — gráficos indisponíveis, mas o restante do painel segue funcionando.');
+    return;
+  }
   renderizarGraficoCargo();
   renderizarGraficoIdade();
   renderizarGraficoPretensao();
@@ -438,7 +454,11 @@ async function salvarEdicao() {
     const resp = await chamarBackend({ action: 'editCandidato', dados });
     if (resp.success) {
       fecharModal();
-      await carregarTudo();
+      const ok = await carregarCandidatos();
+      if (ok) {
+        popularFiltros();
+        aplicarFiltros();
+      }
     } else {
       alert(resp.message || 'Não foi possível salvar as alterações.');
     }
@@ -480,7 +500,7 @@ async function criarVaga() {
     const resp = await chamarBackend({ action: 'createVaga', titulo });
     if (resp.success) {
       input.value = '';
-      await carregarTudo();
+      await carregarVagas();
     } else {
       alert(resp.message || 'Não foi possível criar a vaga.');
     }
@@ -497,7 +517,7 @@ async function mudarStatusVaga(id, status) {
     const resp = await chamarBackend({ action: 'updateVagaStatus', id, status });
     if (!resp.success) {
       alert(resp.message || 'Não foi possível atualizar o status.');
-      await carregarTudo();
+      await carregarVagas();
     }
   } catch (err) {
     alert('Erro de conexão ao atualizar status.');
@@ -516,7 +536,7 @@ async function excluirVagaExecuta(id) {
   try {
     const resp = await chamarBackend({ action: 'deleteVaga', id });
     if (resp.success) {
-      await carregarTudo();
+      await carregarVagas();
     } else {
       alert(resp.message || 'Não foi possível excluir a vaga.');
     }
