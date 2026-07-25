@@ -81,13 +81,18 @@ async function chamarBackend(payload) {
 async function carregarTudo() {
   mostrarCarregando(true);
   try {
-    const [respCandidatos, respVagas] = await Promise.all([
-      chamarBackend({ action: 'listCandidatos' }),
-      chamarBackend({ action: 'listVagasAdmin' })
-    ]);
+      // Chamadas sequenciais (não simultâneas): Web Apps do Apps Script podem
+    // falhar de forma intermitente quando recebem 2 requisições ao mesmo tempo.
+    const respCandidatos = await chamarBackend({ action: 'listCandidatos' });
+    if (!respCandidatos.success) {
+      alert(respCandidatos.message || 'Sessão expirada ou inválida. Faça login novamente.');
+      sair();
+      return;
+    }
 
-    if (!respCandidatos.success || !respVagas.success) {
-      // Token pode ter expirado / ser inválido
+    const respVagas = await chamarBackend({ action: 'listVagasAdmin' });
+    if (!respVagas.success) {
+      alert(respVagas.message || 'Sessão expirada ou inválida. Faça login novamente.');
       sair();
       return;
     }
