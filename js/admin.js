@@ -62,6 +62,22 @@ function sair() {
   document.getElementById('senhaLogin').value = '';
 }
 
+// ------------------------- NAVEGAÇÃO DO MENU LATERAL -------------------------
+
+function irParaPaginaApp(nome) {
+  document.querySelectorAll('.pagina-app').forEach(p => {
+    p.classList.toggle('ativa', p.id === 'pg-' + nome);
+  });
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('ativo', n.dataset.pagina === nome);
+  });
+
+  // Carrega os dados de RH sob demanda, só na primeira vez que a página é aberta
+  if (nome !== 'candidatos' && typeof garantirDadosRh === 'function') {
+    garantirDadosRh();
+  }
+}
+
 function mostrarApp(candidatosJaCarregados) {
   document.getElementById('telaLogin').hidden = true;
   document.getElementById('app').hidden = false;

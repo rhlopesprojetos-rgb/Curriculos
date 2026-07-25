@@ -463,3 +463,198 @@ select.status-select {
 }
 
 @keyframes girar { to { transform: rotate(360deg); } }
+
+/* ---------- LAYOUT COM MENU LATERAL ---------- */
+
+.layout-app {
+  display: flex;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+.sidebar-app {
+  width: 220px;
+  flex-shrink: 0;
+  background: #fff;
+  border-right: 1px solid var(--cor-borda);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.marca-sidebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.marca-sidebar img { height: 28px; }
+.marca-sidebar span { font-weight: 700; font-size: 13px; color: var(--cor-escura); }
+
+.nav-lista {
+  padding: 10px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.nav-item {
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--cor-texto);
+  cursor: pointer;
+  margin-bottom: 2px;
+  transition: background 0.12s ease;
+}
+
+.nav-item:hover { background: var(--cor-fundo); }
+
+.nav-item.ativo {
+  background: var(--cor-primaria);
+  color: #fff;
+  font-weight: 600;
+}
+
+.rodape-sidebar {
+  padding: 12px;
+  border-top: 1px solid var(--cor-borda);
+}
+
+.principal-app {
+  flex: 1;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.pagina-app { display: none; }
+.pagina-app.ativa { display: block; }
+
+@media (max-width: 800px) {
+  .sidebar-app { width: 160px; }
+}
+
+/* ---------- MEDALHAS (tempo de empresa) ---------- */
+
+.medal-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 700px) {
+  .medal-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+.medal {
+  background: var(--cor-fundo);
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+}
+
+.medal .medal-nome {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cor-escura);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.medal .medal-anos {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--cor-primaria);
+  margin: 4px 0;
+}
+
+.medal .medal-cargo {
+  font-size: 11px;
+  color: var(--cor-texto-sec);
+}
+
+/* ---------- LISTA DE BARRAS (motivos de desligamento) ---------- */
+
+.bar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bar-lbl {
+  font-size: 12px;
+  color: var(--cor-texto-sec);
+  width: 220px;
+  flex-shrink: 0;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar-bg {
+  flex: 1;
+  height: 14px;
+  background: var(--cor-fundo);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: var(--cor-primaria);
+  border-radius: 4px;
+}
+
+.bar-v {
+  font-size: 12px;
+  font-weight: 700;
+  width: 34px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ---------- RETENÇÃO POR PERÍODO ---------- */
+
+.ret-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.ret-card {
+  background: var(--cor-fundo);
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+}
+
+.ret-card .ret-titulo {
+  font-size: 11px;
+  color: var(--cor-texto-sec);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.ret-card .ret-valor {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--cor-escura);
+}
+
+.ret-card .ret-sub {
+  font-size: 11px;
+  color: var(--cor-texto-sec);
+  margin-top: 3px;
+}

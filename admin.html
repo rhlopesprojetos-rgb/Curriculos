@@ -23,144 +23,285 @@
 <!-- APP -->
 <div class="app" id="app" hidden>
 
-  <div class="topo">
-    <div class="marca">
-      <img src="img/logo.png" alt="Distribuidora Lopes">
-      <span>Painel de Candidatos</span>
+  <div class="layout-app">
+
+    <aside class="sidebar-app">
+      <div class="marca-sidebar">
+        <img src="img/logo.png" alt="Distribuidora Lopes">
+        <span>Painel Lopes</span>
+      </div>
+      <nav class="nav-lista">
+        <div class="nav-item ativo" data-pagina="candidatos" onclick="irParaPaginaApp('candidatos')">📋 Candidatos</div>
+        <div class="nav-item" data-pagina="rhVisao" onclick="irParaPaginaApp('rhVisao')">🏠 Visão Geral</div>
+        <div class="nav-item" data-pagina="rhColab" onclick="irParaPaginaApp('rhColab')">👥 Colaboradores</div>
+        <div class="nav-item" data-pagina="rhRetencao" onclick="irParaPaginaApp('rhRetencao')">📈 Retenção &amp; Turnover</div>
+        <div class="nav-item" data-pagina="rhLista" onclick="irParaPaginaApp('rhLista')">📄 Lista de Pessoas</div>
+      </nav>
+      <div class="rodape-sidebar">
+        <button class="botao botao-secundario" onclick="sair()" style="width:100%">Sair</button>
+      </div>
+    </aside>
+
+    <main class="principal-app">
+
+    <!-- PÁGINA: CANDIDATOS -->
+    <div class="pagina-app ativa" id="pg-candidatos">
+      <div class="conteudo">
+
+        <!-- FILTROS -->
+        <div class="filtros">
+          <div class="campo">
+            <label>Nome / Email</label>
+            <input type="text" id="filtroTexto" placeholder="Buscar..." oninput="aplicarFiltros()">
+          </div>
+          <div class="campo">
+            <label>Cargo</label>
+            <select id="filtroCargo" onchange="aplicarFiltros()"><option value="">Todos</option></select>
+          </div>
+          <div class="campo">
+            <label>Estado</label>
+            <select id="filtroEstado" onchange="aplicarFiltros()"><option value="">Todos</option></select>
+          </div>
+          <div class="campo">
+            <label>Escolaridade</label>
+            <select id="filtroEscolaridade" onchange="aplicarFiltros()"><option value="">Todas</option></select>
+          </div>
+          <div class="campo">
+            <label>Disponibilidade</label>
+            <select id="filtroDisponibilidade" onchange="aplicarFiltros()"><option value="">Todas</option></select>
+          </div>
+          <div class="campo">
+            <label>Período</label>
+            <select id="filtroPeriodo" onchange="aplicarFiltros()">
+              <option value="">Todo o período</option>
+              <option value="7">Últimos 7 dias</option>
+              <option value="30">Últimos 30 dias</option>
+              <option value="90">Últimos 90 dias</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- CARDS DE RESUMO -->
+        <div class="cards-resumo">
+          <div class="card-resumo">
+            <div class="rotulo">Total de candidatos</div>
+            <div class="valor" id="resumoTotal">0</div>
+          </div>
+          <div class="card-resumo">
+            <div class="rotulo">Pretensão salarial média</div>
+            <div class="valor" id="resumoPretensao">R$ 0</div>
+          </div>
+          <div class="card-resumo">
+            <div class="rotulo">Idade média</div>
+            <div class="valor" id="resumoIdade">0</div>
+          </div>
+          <div class="card-resumo">
+            <div class="rotulo">Cargo mais buscado</div>
+            <div class="valor" id="resumoCargo">—</div>
+          </div>
+        </div>
+
+        <!-- GRÁFICOS -->
+        <div class="grade-graficos">
+          <div class="card-grafico">
+            <h3>Candidatos por cargo</h3>
+            <canvas id="graficoCargo"></canvas>
+          </div>
+          <div class="card-grafico">
+            <h3>Candidatos por faixa etária</h3>
+            <canvas id="graficoIdade"></canvas>
+          </div>
+          <div class="card-grafico">
+            <h3>Candidatos por faixa de pretensão salarial</h3>
+            <canvas id="graficoPretensao"></canvas>
+          </div>
+          <div class="card-grafico">
+            <h3>Envios por mês</h3>
+            <canvas id="graficoEnvios"></canvas>
+          </div>
+        </div>
+
+        <!-- TABELA DE CANDIDATOS -->
+        <div class="secao">
+          <div class="secao-header">
+            <h2>Candidatos</h2>
+            <button class="botao botao-secundario" onclick="exportarCsv()">Exportar CSV</button>
+          </div>
+          <div class="tabela-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Email</th>
+                  <th>Telefone</th>
+                  <th>Cargo</th>
+                  <th>Cidade/UF</th>
+                  <th>Escolaridade</th>
+                  <th>Idade</th>
+                  <th>Pretensão</th>
+                  <th>Disponibilidade</th>
+                  <th>Currículo</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="corpoTabela"></tbody>
+            </table>
+          </div>
+          <div id="tabelaVazia" class="vazio" hidden>Nenhum candidato encontrado com os filtros atuais.</div>
+          <div class="paginacao" id="paginacao"></div>
+        </div>
+
+        <!-- GERENCIAMENTO DE VAGAS -->
+        <div class="secao">
+          <div class="secao-header">
+            <h2>Gerenciamento de vagas</h2>
+          </div>
+          <div class="form-inline">
+            <input type="text" id="novaVagaTitulo" placeholder="Título da nova vaga">
+            <button class="botao botao-primario" onclick="criarVaga()">Criar vaga</button>
+          </div>
+          <div class="tabela-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Título</th>
+                  <th>Status</th>
+                  <th>Criada em</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="corpoTabelaVagas"></tbody>
+            </table>
+          </div>
+          <div id="vagasVazio" class="vazio" hidden>Nenhuma vaga cadastrada ainda.</div>
+        </div>
+
+      </div>
     </div>
-    <button class="botao botao-secundario" onclick="sair()">Sair</button>
-  </div>
 
-  <div class="conteudo">
-
-    <!-- FILTROS -->
-    <div class="filtros">
-      <div class="campo">
-        <label>Nome / Email</label>
-        <input type="text" id="filtroTexto" placeholder="Buscar..." oninput="aplicarFiltros()">
-      </div>
-      <div class="campo">
-        <label>Cargo</label>
-        <select id="filtroCargo" onchange="aplicarFiltros()"><option value="">Todos</option></select>
-      </div>
-      <div class="campo">
-        <label>Estado</label>
-        <select id="filtroEstado" onchange="aplicarFiltros()"><option value="">Todos</option></select>
-      </div>
-      <div class="campo">
-        <label>Escolaridade</label>
-        <select id="filtroEscolaridade" onchange="aplicarFiltros()"><option value="">Todas</option></select>
-      </div>
-      <div class="campo">
-        <label>Disponibilidade</label>
-        <select id="filtroDisponibilidade" onchange="aplicarFiltros()"><option value="">Todas</option></select>
-      </div>
-      <div class="campo">
-        <label>Período</label>
-        <select id="filtroPeriodo" onchange="aplicarFiltros()">
-          <option value="">Todo o período</option>
-          <option value="7">Últimos 7 dias</option>
-          <option value="30">Últimos 30 dias</option>
-          <option value="90">Últimos 90 dias</option>
-        </select>
+    <!-- PÁGINA: RH — VISÃO GERAL -->
+    <div class="pagina-app" id="pg-rhVisao">
+      <div class="conteudo">
+        <div class="secao-header"><h2>Visão Geral — RH</h2></div>
+        <div class="cards-resumo" id="rhVisaoKpis"></div>
+        <div class="grade-graficos">
+          <div class="card-grafico">
+            <h3>Headcount ativo por ano</h3>
+            <canvas id="chVisaoHc"></canvas>
+          </div>
+          <div class="card-grafico">
+            <h3>Admissões vs desligamentos por ano</h3>
+            <canvas id="chVisaoAdm"></canvas>
+          </div>
+        </div>
+        <div class="grade-graficos">
+          <div class="card-grafico">
+            <h3>Por unidade</h3>
+            <canvas id="chVisaoUnidade"></canvas>
+          </div>
+          <div class="card-grafico">
+            <h3>Por departamento</h3>
+            <canvas id="chVisaoDepto"></canvas>
+          </div>
+        </div>
+        <div class="secao">
+          <div class="secao-header"><h2>Por cargo — top 20</h2></div>
+          <div style="height:360px"><canvas id="chVisaoCargo"></canvas></div>
+        </div>
       </div>
     </div>
 
-    <!-- CARDS DE RESUMO -->
-    <div class="cards-resumo">
-      <div class="card-resumo">
-        <div class="rotulo">Total de candidatos</div>
-        <div class="valor" id="resumoTotal">0</div>
-      </div>
-      <div class="card-resumo">
-        <div class="rotulo">Pretensão salarial média</div>
-        <div class="valor" id="resumoPretensao">R$ 0</div>
-      </div>
-      <div class="card-resumo">
-        <div class="rotulo">Idade média</div>
-        <div class="valor" id="resumoIdade">0</div>
-      </div>
-      <div class="card-resumo">
-        <div class="rotulo">Cargo mais buscado</div>
-        <div class="valor" id="resumoCargo">—</div>
-      </div>
-    </div>
-
-    <!-- GRÁFICOS -->
-    <div class="grade-graficos">
-      <div class="card-grafico">
-        <h3>Candidatos por cargo</h3>
-        <canvas id="graficoCargo"></canvas>
-      </div>
-      <div class="card-grafico">
-        <h3>Candidatos por faixa etária</h3>
-        <canvas id="graficoIdade"></canvas>
-      </div>
-      <div class="card-grafico">
-        <h3>Candidatos por faixa de pretensão salarial</h3>
-        <canvas id="graficoPretensao"></canvas>
-      </div>
-      <div class="card-grafico">
-        <h3>Envios por mês</h3>
-        <canvas id="graficoEnvios"></canvas>
+    <!-- PÁGINA: RH — COLABORADORES -->
+    <div class="pagina-app" id="pg-rhColab">
+      <div class="conteudo">
+        <div class="secao-header"><h2>Colaboradores</h2></div>
+        <div class="secao">
+          <div class="secao-header"><h2>Medalhistas — tempo de empresa (ativos)</h2></div>
+          <div class="medal-row" id="rhMedalhas"></div>
+        </div>
+        <div class="grade-graficos">
+          <div class="card-grafico">
+            <h3>Tempo de empresa</h3>
+            <canvas id="chColabTempo"></canvas>
+          </div>
+          <div class="card-grafico">
+            <h3>Geração</h3>
+            <canvas id="chColabGeracao"></canvas>
+          </div>
+        </div>
+        <div class="grade-graficos">
+          <div class="card-grafico">
+            <h3>Sexo</h3>
+            <canvas id="chColabSexo"></canvas>
+          </div>
+          <div class="card-grafico">
+            <h3>Decisão de desligamento</h3>
+            <canvas id="chColabDecisao"></canvas>
+          </div>
+        </div>
+        <div class="secao">
+          <div class="secao-header"><h2>Motivos de desligamento — top 10</h2></div>
+          <div class="bar-list" id="rhMotivos"></div>
+        </div>
       </div>
     </div>
 
-    <!-- TABELA DE CANDIDATOS -->
-    <div class="secao">
-      <div class="secao-header">
-        <h2>Candidatos</h2>
-        <button class="botao botao-secundario" onclick="exportarCsv()">Exportar CSV</button>
+    <!-- PÁGINA: RH — RETENÇÃO & TURNOVER -->
+    <div class="pagina-app" id="pg-rhRetencao">
+      <div class="conteudo">
+        <div class="secao-header"><h2>Retenção &amp; Turnover</h2></div>
+        <div class="cards-resumo" id="rhRetencaoKpis"></div>
+        <div class="secao">
+          <div class="secao-header"><h2>Turnover anual (%)</h2></div>
+          <div style="height:220px"><canvas id="chTurnoverAno"></canvas></div>
+        </div>
+        <div class="secao">
+          <div class="secao-header"><h2>Retenção por período (de todos os já admitidos)</h2></div>
+          <div class="ret-grid" id="rhRetencaoPeriodo"></div>
+        </div>
       </div>
-      <div class="tabela-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Email</th>
-              <th>Telefone</th>
-              <th>Cargo</th>
-              <th>Cidade/UF</th>
-              <th>Escolaridade</th>
-              <th>Idade</th>
-              <th>Pretensão</th>
-              <th>Disponibilidade</th>
-              <th>Currículo</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="corpoTabela"></tbody>
-        </table>
-      </div>
-      <div id="tabelaVazia" class="vazio" hidden>Nenhum candidato encontrado com os filtros atuais.</div>
-      <div class="paginacao" id="paginacao"></div>
     </div>
 
-    <!-- GERENCIAMENTO DE VAGAS -->
-    <div class="secao">
-      <div class="secao-header">
-        <h2>Gerenciamento de vagas</h2>
+    <!-- PÁGINA: RH — LISTA DE PESSOAS -->
+    <div class="pagina-app" id="pg-rhLista">
+      <div class="conteudo">
+        <div class="secao">
+          <div class="secao-header">
+            <h2>Lista de pessoas</h2>
+            <button class="botao botao-secundario" id="btnToggleAtivosRh" onclick="alternarSomenteAtivosRh()">Ver somente ativos</button>
+          </div>
+          <div class="filtros" style="grid-template-columns:1fr;">
+            <div class="campo">
+              <label>Buscar por nome</label>
+              <input type="text" id="rhListaBusca" placeholder="Digite para buscar..." oninput="renderizarListaRh()">
+            </div>
+          </div>
+          <div class="tabela-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Unidade</th>
+                  <th>Depto</th>
+                  <th>Cargo</th>
+                  <th>Status</th>
+                  <th>Admissão</th>
+                  <th>Desligamento</th>
+                  <th>Tempo</th>
+                  <th>Sexo</th>
+                  <th>Geração</th>
+                </tr>
+              </thead>
+              <tbody id="rhListaCorpo"></tbody>
+            </table>
+          </div>
+          <div id="rhListaVazia" class="vazio" hidden>Nenhum colaborador encontrado.</div>
+          <div class="paginacao" id="rhListaPaginacao"></div>
+        </div>
       </div>
-      <div class="form-inline">
-        <input type="text" id="novaVagaTitulo" placeholder="Título da nova vaga">
-        <button class="botao botao-primario" onclick="criarVaga()">Criar vaga</button>
-      </div>
-      <div class="tabela-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>Título</th>
-              <th>Status</th>
-              <th>Criada em</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="corpoTabelaVagas"></tbody>
-        </table>
-      </div>
-      <div id="vagasVazio" class="vazio" hidden>Nenhuma vaga cadastrada ainda.</div>
     </div>
 
+    </main>
   </div>
 </div>
 
@@ -219,5 +360,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="js/config.js"></script>
 <script src="js/admin.js"></script>
+<script src="js/rh.js"></script>
 </body>
 </html>
