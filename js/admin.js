@@ -69,13 +69,21 @@ function mostrarApp() {
 
 // ------------------------- CHAMADAS AO BACKEND -------------------------
 
-async function chamarBackend(payload) {
-  const resp = await fetch(APPS_SCRIPT_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(Object.assign({ token: TOKEN }, payload))
-  });
-  return resp.json();
+async function chamarBackend(payload, tentativas = 3) {
+  for (let tentativa = 1; tentativa <= tentativas; tentativa++) {
+    try {
+      const resp = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(Object.assign({ token: TOKEN }, payload))
+      });
+      return await resp.json();
+    } catch (err) {
+      if (tentativa === tentativas) throw err;
+      // Falha intermitente conhecida do Apps Script: espera um pouco e tenta de novo
+      await new Promise(r => setTimeout(r, 600 * tentativa));
+    }
+  }
 }
 
 async function carregarTudo() {
