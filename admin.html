@@ -10,13 +10,68 @@
 
 <!-- TELA DE LOGIN -->
 <div class="tela-login" id="telaLogin">
+
+  <div class="card-login" id="cardLoginPrincipal">
+    <img src="img/logo.png" alt="Distribuidora Lopes">
+    <h1>Painel Lopes</h1>
+    <p class="subtitulo">Entre com seu email corporativo</p>
+    <div class="erro-login" id="erroLogin"></div>
+    <input type="email" id="emailLogin" placeholder="seu.email@distribuidoralopes.com.br" autocomplete="username">
+    <input type="password" id="senhaLogin" placeholder="Senha">
+    <button class="botao botao-primario" onclick="fazerLogin()">Entrar</button>
+    <p class="link-esqueci" onclick="abrirEsqueciSenha()">Esqueci minha senha</p>
+  </div>
+
+  <div class="card-login" id="cardEsqueciSenha" hidden>
+    <img src="img/logo.png" alt="Distribuidora Lopes">
+    <h1>Redefinir senha</h1>
+    <p class="subtitulo">Informe seu email — vamos enviar um código</p>
+    <div class="erro-login" id="erroEsqueci"></div>
+    <input type="email" id="emailEsqueci" placeholder="seu.email@distribuidoralopes.com.br">
+    <button class="botao botao-primario" onclick="solicitarCodigoRedefinicao()">Enviar código</button>
+    <p class="link-esqueci" onclick="voltarParaLogin()">Voltar para o login</p>
+  </div>
+
+  <div class="card-login" id="cardRedefinirComCodigo" hidden>
+    <img src="img/logo.png" alt="Distribuidora Lopes">
+    <h1>Digite o código</h1>
+    <p class="subtitulo">Enviamos um código de 6 dígitos para o seu email</p>
+    <div class="erro-login" id="erroRedefinir"></div>
+    <input type="text" id="codigoRedefinicao" placeholder="Código de 6 dígitos" maxlength="6">
+    <input type="password" id="novaSenhaRedefinicao" placeholder="Nova senha (mín. 6 caracteres)">
+    <button class="botao botao-primario" onclick="confirmarRedefinicaoComCodigo()">Redefinir senha</button>
+    <p class="link-esqueci" onclick="voltarParaLogin()">Voltar para o login</p>
+  </div>
+
+</div>
+
+<!-- ÁREA EM CONSTRUÇÃO (Supervisor / Usuário — telas ainda não existem) -->
+<div class="tela-login" id="telaEmConstrucao" hidden>
   <div class="card-login">
     <img src="img/logo.png" alt="Distribuidora Lopes">
-    <h1>Painel Administrativo</h1>
-    <p class="subtitulo">Captação de Currículos</p>
-    <div class="erro-login" id="erroLogin">Senha incorreta.</div>
-    <input type="password" id="senhaLogin" placeholder="Senha de acesso">
-    <button class="botao botao-primario" onclick="fazerLogin()">Entrar</button>
+    <h1>Olá, <span id="nomeUsuarioConstrucao"></span>!</h1>
+    <p class="subtitulo">Sua área (<span id="papelUsuarioConstrucao"></span>) ainda está em construção. Em breve você terá acesso ao seu painel por aqui.</p>
+    <button class="botao botao-secundario" onclick="sair()" style="width:100%">Sair</button>
+  </div>
+</div>
+
+<!-- TROCA DE SENHA OBRIGATÓRIA (1º acesso) -->
+<div class="overlay-modal" id="modalTrocarSenha" hidden>
+  <div class="modal">
+    <h2>Defina sua nova senha</h2>
+    <p style="font-size:13px; color:var(--cor-texto-sec); margin-bottom:14px;">
+      Por segurança, você precisa trocar a senha padrão antes de continuar.
+    </p>
+    <div class="erro-login" id="erroTrocarSenha"></div>
+    <div class="campo" style="margin-bottom:12px;">
+      <label>Senha atual</label>
+      <input type="password" id="senhaAtualTroca">
+    </div>
+    <div class="campo" style="margin-bottom:16px;">
+      <label>Nova senha (mín. 6 caracteres)</label>
+      <input type="password" id="novaSenhaTroca">
+    </div>
+    <button class="botao botao-primario" onclick="confirmarTrocaSenhaObrigatoria()" style="width:100%">Salvar e continuar</button>
   </div>
 </div>
 
@@ -37,6 +92,7 @@
         <div class="nav-item" data-pagina="rhRetencao" onclick="irParaPaginaApp('rhRetencao')">📈 Retenção &amp; Turnover</div>
         <div class="nav-item" data-pagina="rhLista" onclick="irParaPaginaApp('rhLista')">📄 Lista de Pessoas</div>
         <div class="nav-item" data-pagina="rhTreinamentos" onclick="irParaPaginaApp('rhTreinamentos')">🎓 Treinamentos</div>
+        <div class="nav-item" data-pagina="usuarios" onclick="irParaPaginaApp('usuarios')">🔑 Usuários</div>
       </nav>
       <div class="rodape-sidebar">
         <button class="botao botao-secundario" onclick="recarregarDadosRh()" style="width:100%; margin-bottom:8px;">🔄 Atualizar dados RH</button>
@@ -405,6 +461,45 @@
       </div>
     </div>
 
+    <!-- PÁGINA: GERENCIAR USUÁRIOS -->
+    <div class="pagina-app" id="pg-usuarios">
+      <div class="conteudo">
+        <div class="secao">
+          <div class="secao-header">
+            <h2>Usuários do painel</h2>
+            <button class="botao botao-secundario" onclick="carregarUsuariosAdmin()">🔄 Atualizar lista</button>
+          </div>
+          <p style="font-size:13px; color:var(--cor-texto-sec); margin-top:-8px; margin-bottom:16px;">
+            Essa lista é sincronizada automaticamente a cada 2h a partir da planilha de Colaboradores (só ativos).
+            Papel e senha são só seus — não são apagados na sincronização.
+          </p>
+          <div class="filtros" style="grid-template-columns:1fr;">
+            <div class="campo">
+              <label>Buscar por nome ou email</label>
+              <input type="text" id="usuariosBusca" placeholder="Digite para buscar..." oninput="renderizarTabelaUsuarios()">
+            </div>
+          </div>
+          <div class="tabela-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Email</th>
+                  <th>Superior</th>
+                  <th>Papel</th>
+                  <th>Status</th>
+                  <th>Deve trocar senha?</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="usuariosCorpo"></tbody>
+            </table>
+          </div>
+          <div id="usuariosVazio" class="vazio" hidden>Nenhum usuário sincronizado ainda. Confira se o gatilho de sincronização já rodou.</div>
+        </div>
+      </div>
+    </div>
+
     </main>
   </div>
 </div>
@@ -465,5 +560,6 @@
 <script src="js/config.js"></script>
 <script src="js/admin.js"></script>
 <script src="js/rh.js"></script>
+<script src="js/usuarios.js"></script>
 </body>
 </html>
