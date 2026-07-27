@@ -658,3 +658,22 @@ select.status-select {
   color: var(--cor-texto-sec);
   margin-top: 3px;
 }
+
+/* ---------- LOGIN: link esqueci senha ---------- */
+
+.link-esqueci {
+  text-align: center;
+  font-size: 12px;
+  color: var(--cor-primaria);
+  cursor: pointer;
+  margin-top: 14px;
+  font-weight: 600;
+}
+
+.link-esqueci:hover {
+  text-decoration: underline;
+}
+
+.erro-login.sucesso {
+  color: var(--cor-sucesso);
+}
