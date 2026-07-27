@@ -1,6 +1,6 @@
 // ------------------------- ESTADO GLOBAL -------------------------
 
-let TOKEN = null;
+let SESSAO = null; // { email, tokenSessao, papel, nome }
 let candidatosOriginais = [];
 let candidatosFiltrados = [];
 let vagas = [];
@@ -9,15 +9,19 @@ const ITENS_POR_PAGINA = 10;
 
 let graficoCargo, graficoIdade, graficoPretensao, graficoEnvios;
 
-const CHAVE_STORAGE = 'lopes_admin_token';
+const CHAVE_STORAGE = 'lopes_sessao_usuario';
 
 // ------------------------- INICIALIZAÇÃO -------------------------
 
 document.addEventListener('DOMContentLoaded', () => {
-  const tokenSalvo = localStorage.getItem(CHAVE_STORAGE);
-  if (tokenSalvo) {
-    TOKEN = tokenSalvo;
-    mostrarApp(false);
+  const sessaoSalva = localStorage.getItem(CHAVE_STORAGE);
+  if (sessaoSalva) {
+    try {
+      SESSAO = JSON.parse(sessaoSalva);
+      prosseguirAposLogin();
+    } catch (err) {
+      localStorage.removeItem(CHAVE_STORAGE);
+    }
   }
 
   document.getElementById('senhaLogin').addEventListener('keydown', e => {
@@ -28,22 +32,154 @@ document.addEventListener('DOMContentLoaded', () => {
 // ------------------------- LOGIN / LOGOUT -------------------------
 
 async function fazerLogin() {
+  const email = document.getElementById('emailLogin').value.trim();
   const senha = document.getElementById('senhaLogin').value;
   const erroEl = document.getElementById('erroLogin');
   erroEl.classList.remove('visivel');
 
-  if (!senha) return;
+  if (!email || !senha) return;
 
   mostrarCarregando(true);
   try {
-    const resp = await chamarBackend({ action: 'login', senha });
+    const resp = await chamarBackend({ action: 'loginUsuario', email, senha });
     if (resp.success) {
-      TOKEN = resp.token;
-      localStorage.setItem(CHAVE_STORAGE, TOKEN);
-      candidatosOriginais = resp.candidatos || []; // já veio junto do login
-      mostrarApp(true);
+      SESSAO = {
+        email: resp.email,
+        tokenSessao: resp.tokenSessao,
+        papel: resp.papel,
+        nome: resp.nome,
+        deveTrocarSenha: resp.deveTrocarSenha
+      };
+      localStorage.setItem(CHAVE_STORAGE, JSON.stringify(SESSAO));
+      prosseguirAposLogin();
     } else {
-      erroEl.textContent = resp.message || 'Senha incorreta.';
+      erroEl.textContent = resp.message || 'Não foi possível entrar.';
+      erroEl.classList.add('visivel');
+    }
+  } catch (err) {
+    erroEl.textContent = 'Erro de conexão. Tente novamente.';
+    erroEl.classList.add('visivel');
+  } finally {
+    mostrarCarregando(false);
+  }
+}
+
+function prosseguirAposLogin() {
+  document.getElementById('telaLogin').hidden = true;
+
+  if (SESSAO.deveTrocarSenha) {
+    document.getElementById('modalTrocarSenha').hidden = false;
+    return;
+  }
+
+  entrarNaAreaCorrespondente();
+}
+
+function entrarNaAreaCorrespondente() {
+  document.getElementById('modalTrocarSenha').hidden = true;
+
+  if (SESSAO.papel !== 'Admin') {
+    document.getElementById('nomeUsuarioConstrucao').textContent = SESSAO.nome || '';
+    document.getElementById('papelUsuarioConstrucao').textContent = SESSAO.papel || 'Usuário';
+    document.getElementById('telaEmConstrucao').hidden = false;
+    return;
+  }
+
+  document.getElementById('app').hidden = false;
+  inicializarPainel(false);
+}
+
+async function confirmarTrocaSenhaObrigatoria() {
+  const senhaAtual = document.getElementById('senhaAtualTroca').value;
+  const novaSenha = document.getElementById('novaSenhaTroca').value;
+  const erroEl = document.getElementById('erroTrocarSenha');
+  erroEl.classList.remove('visivel');
+
+  if (!senhaAtual || !novaSenha) return;
+
+  mostrarCarregando(true);
+  try {
+    const resp = await chamarBackend({ action: 'trocarSenhaPrimeiroAcesso', email: SESSAO.email, senhaAtual, novaSenha });
+    if (resp.success) {
+      SESSAO.deveTrocarSenha = false;
+      localStorage.setItem(CHAVE_STORAGE, JSON.stringify(SESSAO));
+      document.getElementById('senhaAtualTroca').value = '';
+      document.getElementById('novaSenhaTroca').value = '';
+      entrarNaAreaCorrespondente();
+    } else {
+      erroEl.textContent = resp.message || 'Não foi possível trocar a senha.';
+      erroEl.classList.add('visivel');
+    }
+  } catch (err) {
+    erroEl.textContent = 'Erro de conexão. Tente novamente.';
+    erroEl.classList.add('visivel');
+  } finally {
+    mostrarCarregando(false);
+  }
+}
+
+// ------------------------- ESQUECI MINHA SENHA -------------------------
+
+function abrirEsqueciSenha() {
+  document.getElementById('cardLoginPrincipal').hidden = true;
+  document.getElementById('cardEsqueciSenha').hidden = false;
+  document.getElementById('cardRedefinirComCodigo').hidden = true;
+}
+
+function voltarParaLogin() {
+  document.getElementById('cardLoginPrincipal').hidden = false;
+  document.getElementById('cardEsqueciSenha').hidden = true;
+  document.getElementById('cardRedefinirComCodigo').hidden = true;
+}
+
+async function solicitarCodigoRedefinicao() {
+  const email = document.getElementById('emailEsqueci').value.trim();
+  const erroEl = document.getElementById('erroEsqueci');
+  erroEl.classList.remove('visivel', 'sucesso');
+  if (!email) return;
+
+  mostrarCarregando(true);
+  try {
+    const resp = await chamarBackend({ action: 'solicitarRedefinicaoSenha', email });
+    erroEl.textContent = resp.message || 'Se o email existir, um código foi enviado.';
+    erroEl.classList.add('visivel', 'sucesso');
+    if (resp.success) {
+      document.getElementById('codigoRedefinicao').dataset.email = email;
+      setTimeout(() => {
+        document.getElementById('cardEsqueciSenha').hidden = true;
+        document.getElementById('cardRedefinirComCodigo').hidden = false;
+      }, 900);
+    }
+  } catch (err) {
+    erroEl.textContent = 'Erro de conexão. Tente novamente.';
+    erroEl.classList.add('visivel');
+  } finally {
+    mostrarCarregando(false);
+  }
+}
+
+async function confirmarRedefinicaoComCodigo() {
+  const email = document.getElementById('codigoRedefinicao').dataset.email || document.getElementById('emailEsqueci').value.trim();
+  const token = document.getElementById('codigoRedefinicao').value.trim();
+  const novaSenha = document.getElementById('novaSenhaRedefinicao').value;
+  const erroEl = document.getElementById('erroRedefinir');
+  erroEl.classList.remove('visivel', 'sucesso');
+
+  if (!token || !novaSenha) return;
+
+  mostrarCarregando(true);
+  try {
+    const resp = await chamarBackend({ action: 'redefinirSenhaComToken', email, token, novaSenha });
+    if (resp.success) {
+      erroEl.textContent = 'Senha redefinida! Faça login com a nova senha.';
+      erroEl.classList.add('visivel', 'sucesso');
+      setTimeout(() => {
+        document.getElementById('codigoRedefinicao').value = '';
+        document.getElementById('novaSenhaRedefinicao').value = '';
+        voltarParaLogin();
+      }, 1200);
+    } else {
+      erroEl.textContent = resp.message || 'Não foi possível redefinir a senha.';
       erroEl.classList.add('visivel');
     }
   } catch (err) {
@@ -56,10 +192,13 @@ async function fazerLogin() {
 
 function sair() {
   localStorage.removeItem(CHAVE_STORAGE);
-  TOKEN = null;
+  SESSAO = null;
   document.getElementById('app').hidden = true;
+  document.getElementById('telaEmConstrucao').hidden = true;
   document.getElementById('telaLogin').hidden = false;
   document.getElementById('senhaLogin').value = '';
+  document.getElementById('emailLogin').value = '';
+  voltarParaLogin();
 }
 
 // ------------------------- NAVEGAÇÃO DO MENU LATERAL -------------------------
@@ -72,14 +211,22 @@ function irParaPaginaApp(nome) {
     n.classList.toggle('ativo', n.dataset.pagina === nome);
   });
 
+  const barraFiltrosRh = document.getElementById('filtrosRhBar');
+  if (barraFiltrosRh) {
+    const paginasComFiltroRh = ['rhVisao', 'rhColab', 'rhRetencao', 'rhLista'];
+    barraFiltrosRh.hidden = !paginasComFiltroRh.includes(nome);
+  }
+
   // Carrega os dados de RH sob demanda, só na primeira vez que a página é aberta
-  if (nome !== 'candidatos' && typeof garantirDadosRh === 'function') {
+  if (nome !== 'candidatos' && nome !== 'usuarios' && typeof garantirDadosRh === 'function') {
     garantirDadosRh();
+  }
+  if (nome === 'usuarios' && typeof garantirUsuariosCarregados === 'function') {
+    garantirUsuariosCarregados();
   }
 }
 
 function mostrarApp(candidatosJaCarregados) {
-  document.getElementById('telaLogin').hidden = true;
   document.getElementById('app').hidden = false;
   inicializarPainel(candidatosJaCarregados);
 }
@@ -87,12 +234,13 @@ function mostrarApp(candidatosJaCarregados) {
 // ------------------------- CHAMADAS AO BACKEND -------------------------
 
 async function chamarBackend(payload, tentativas = 3) {
+  const credenciais = SESSAO ? { email: SESSAO.email, tokenSessao: SESSAO.tokenSessao } : {};
   for (let tentativa = 1; tentativa <= tentativas; tentativa++) {
     try {
       const resp = await fetch(APPS_SCRIPT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(Object.assign({ token: TOKEN }, payload))
+        body: JSON.stringify(Object.assign({}, credenciais, payload))
       });
       return await resp.json();
     } catch (err) {
