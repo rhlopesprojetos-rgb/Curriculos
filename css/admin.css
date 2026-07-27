@@ -60,7 +60,9 @@ body {
   margin: 0 0 24px;
 }
 
-.card-login input[type="password"] {
+.card-login input[type="password"],
+.card-login input[type="email"],
+.card-login input[type="text"] {
   width: 100%;
   padding: 11px 14px;
   border: 1px solid var(--cor-borda);
@@ -70,7 +72,9 @@ body {
   outline: none;
 }
 
-.card-login input[type="password"]:focus {
+.card-login input[type="password"]:focus,
+.card-login input[type="email"]:focus,
+.card-login input[type="text"]:focus {
   border-color: var(--cor-primaria);
 }
 
