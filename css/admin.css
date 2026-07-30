@@ -681,3 +681,60 @@ select.status-select {
 .erro-login.sucesso {
   color: var(--cor-sucesso);
 }
+
+/* ---------- MENU LATERAL RECOLHÍVEL ---------- */
+
+.marca-sidebar {
+  position: relative;
+}
+
+.botao-colapsar {
+  margin-left: auto;
+  background: none;
+  border: 1px solid var(--cor-borda);
+  border-radius: 6px;
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--cor-texto-sec);
+  flex-shrink: 0;
+}
+
+.botao-colapsar:hover {
+  background: var(--cor-fundo);
+}
+
+.sidebar-app.colapsada {
+  width: 0;
+  min-width: 0;
+  border-right: none;
+  overflow: hidden;
+  padding: 0;
+}
+
+.sidebar-app.colapsada * {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.botao-abrir-sidebar {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 50;
+  background: #fff;
+  border: 1px solid var(--cor-borda);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: var(--sombra);
+  color: var(--cor-escura);
+}
+
+.botao-abrir-sidebar[hidden] {
+  display: none;
+}
