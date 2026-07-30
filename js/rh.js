@@ -159,20 +159,51 @@ function rhHeadcountNoFimDoAno(colaboradores, ano) {
   }).length;
 }
 
+function obterPeriodoSelecionadoRh() {
+  const de = document.getElementById('rhFiltroAnoDe').value;
+  const ate = document.getElementById('rhFiltroAnoAte').value;
+  if (!de && !ate) return null;
+
+  const fmt = iso => {
+    const [a, m, d] = iso.split('-');
+    return `${d}/${m}/${a}`;
+  };
+
+  let rotulo;
+  if (de && ate) rotulo = `${fmt(de)} – ${fmt(ate)}`;
+  else if (de) rotulo = `a partir de ${fmt(de)}`;
+  else rotulo = `até ${fmt(ate)}`;
+
+  return { de, ate, rotulo };
+}
+
 function renderizarVisaoGeralRh() {
   const colaboradores = obterColaboradoresFiltrados();
   const anoAtual = new Date().getFullYear();
   const ativos = colaboradores.filter(c => c._ativo);
 
-  const admissoesAno = colaboradores.filter(c => c._anoAdmissao === anoAtual).length;
-  const desligamentosAno = colaboradores.filter(c => c._anoDesligamento === anoAtual).length;
-  const turnoverAno = ativos.length ? ((desligamentosAno / ativos.length) * 100).toFixed(1) : '0.0';
+  const periodo = obterPeriodoSelecionadoRh();
+  let rotuloPeriodo, admissoesQtd, desligamentosQtd, turnoverQtd;
+
+  if (periodo) {
+    // Com período selecionado, "colaboradores" já é a coorte admitida nesse
+    // intervalo (o filtro compartilhado filtra por data de admissão).
+    rotuloPeriodo = periodo.rotulo;
+    admissoesQtd = colaboradores.length;
+    desligamentosQtd = colaboradores.filter(c => !c._ativo).length;
+    turnoverQtd = admissoesQtd ? ((desligamentosQtd / admissoesQtd) * 100).toFixed(1) : '0.0';
+  } else {
+    rotuloPeriodo = String(anoAtual);
+    admissoesQtd = colaboradores.filter(c => c._anoAdmissao === anoAtual).length;
+    desligamentosQtd = colaboradores.filter(c => c._anoDesligamento === anoAtual).length;
+    turnoverQtd = ativos.length ? ((desligamentosQtd / ativos.length) * 100).toFixed(1) : '0.0';
+  }
 
   document.getElementById('rhVisaoKpis').innerHTML = `
     <div class="card-resumo"><div class="rotulo">Total ativos</div><div class="valor">${ativos.length}</div></div>
-    <div class="card-resumo"><div class="rotulo">Admissões (${anoAtual})</div><div class="valor">${admissoesAno}</div></div>
-    <div class="card-resumo"><div class="rotulo">Desligamentos (${anoAtual})</div><div class="valor">${desligamentosAno}</div></div>
-    <div class="card-resumo"><div class="rotulo">Turnover aprox. (${anoAtual})</div><div class="valor">${turnoverAno}%</div></div>
+    <div class="card-resumo"><div class="rotulo">Admissões (${rotuloPeriodo})</div><div class="valor">${admissoesQtd}</div></div>
+    <div class="card-resumo"><div class="rotulo">Desligamentos (${rotuloPeriodo})</div><div class="valor">${desligamentosQtd}</div></div>
+    <div class="card-resumo"><div class="rotulo">Turnover aprox. (${rotuloPeriodo})</div><div class="valor">${turnoverQtd}%</div></div>
   `;
 
   // Headcount por ano
@@ -359,16 +390,31 @@ function renderizarRetencaoRh() {
     return Number(((desligadosAno / hcMedio) * 100).toFixed(1));
   });
 
-  const desligamentosAno = colaboradores.filter(c => c._anoDesligamento === anoAtual).length;
-  const desligamentosAnoAnterior = colaboradores.filter(c => c._anoDesligamento === anoAtual - 1).length;
   const totalDesligadosHistorico = colaboradores.filter(c => !c._ativo).length;
+  const periodo = obterPeriodoSelecionadoRh();
 
-  document.getElementById('rhRetencaoKpis').innerHTML = `
-    <div class="card-resumo"><div class="rotulo">Turnover ${anoAtual}</div><div class="valor">${turnoverPorAno[turnoverPorAno.length - 1] || 0}%</div></div>
-    <div class="card-resumo"><div class="rotulo">Desligamentos ${anoAtual}</div><div class="valor">${desligamentosAno}</div></div>
-    <div class="card-resumo"><div class="rotulo">Desligamentos ${anoAtual - 1}</div><div class="valor">${desligamentosAnoAnterior}</div></div>
-    <div class="card-resumo"><div class="rotulo">Total desligados (histórico)</div><div class="valor">${totalDesligadosHistorico}</div></div>
-  `;
+  if (periodo) {
+    const admitidosPeriodo = colaboradores.length;
+    const desligadosPeriodo = colaboradores.filter(c => !c._ativo).length;
+    const turnoverPeriodo = admitidosPeriodo ? ((desligadosPeriodo / admitidosPeriodo) * 100).toFixed(1) : '0.0';
+
+    document.getElementById('rhRetencaoKpis').innerHTML = `
+      <div class="card-resumo"><div class="rotulo">Turnover (${periodo.rotulo})</div><div class="valor">${turnoverPeriodo}%</div></div>
+      <div class="card-resumo"><div class="rotulo">Desligamentos (${periodo.rotulo})</div><div class="valor">${desligadosPeriodo}</div></div>
+      <div class="card-resumo"><div class="rotulo">Admitidos (${periodo.rotulo})</div><div class="valor">${admitidosPeriodo}</div></div>
+      <div class="card-resumo"><div class="rotulo">Total desligados (histórico)</div><div class="valor">${totalDesligadosHistorico}</div></div>
+    `;
+  } else {
+    const desligamentosAno = colaboradores.filter(c => c._anoDesligamento === anoAtual).length;
+    const desligamentosAnoAnterior = colaboradores.filter(c => c._anoDesligamento === anoAtual - 1).length;
+
+    document.getElementById('rhRetencaoKpis').innerHTML = `
+      <div class="card-resumo"><div class="rotulo">Turnover ${anoAtual}</div><div class="valor">${turnoverPorAno[turnoverPorAno.length - 1] || 0}%</div></div>
+      <div class="card-resumo"><div class="rotulo">Desligamentos ${anoAtual}</div><div class="valor">${desligamentosAno}</div></div>
+      <div class="card-resumo"><div class="rotulo">Desligamentos ${anoAtual - 1}</div><div class="valor">${desligamentosAnoAnterior}</div></div>
+      <div class="card-resumo"><div class="rotulo">Total desligados (histórico)</div><div class="valor">${totalDesligadosHistorico}</div></div>
+    `;
+  }
 
   if (chTurnoverAno) chTurnoverAno.destroy();
   chTurnoverAno = new Chart(document.getElementById('chTurnoverAno'), {
