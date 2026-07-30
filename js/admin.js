@@ -229,6 +229,23 @@ function irParaPaginaApp(nome) {
 function mostrarApp(candidatosJaCarregados) {
   document.getElementById('app').hidden = false;
   inicializarPainel(candidatosJaCarregados);
+  aplicarPreferenciaSidebar();
+}
+
+// ------------------------- MENU LATERAL RECOLHÍVEL -------------------------
+
+const CHAVE_SIDEBAR = 'lopes_sidebar_colapsada';
+
+function alternarSidebar() {
+  const colapsada = document.getElementById('app').querySelector('.sidebar-app').classList.toggle('colapsada');
+  document.getElementById('btnAbrirSidebar').hidden = !colapsada;
+  localStorage.setItem(CHAVE_SIDEBAR, colapsada ? '1' : '0');
+}
+
+function aplicarPreferenciaSidebar() {
+  const colapsada = localStorage.getItem(CHAVE_SIDEBAR) === '1';
+  document.querySelector('.sidebar-app').classList.toggle('colapsada', colapsada);
+  document.getElementById('btnAbrirSidebar').hidden = !colapsada;
 }
 
 // ------------------------- CHAMADAS AO BACKEND -------------------------
