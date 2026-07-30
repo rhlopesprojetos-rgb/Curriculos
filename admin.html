@@ -84,11 +84,12 @@
       <div class="marca-sidebar">
         <img src="img/logo.png" alt="Distribuidora Lopes">
         <span>Painel Lopes</span>
+        <button class="botao-colapsar" onclick="alternarSidebar()" title="Ocultar menu">‹</button>
       </div>
       <nav class="nav-lista">
-        <div class="nav-item ativo" data-pagina="candidatos" onclick="irParaPaginaApp('candidatos')">📋 Candidatos</div>
         <div class="nav-item" data-pagina="rhVisao" onclick="irParaPaginaApp('rhVisao')">🏠 Visão Geral</div>
         <div class="nav-item" data-pagina="rhColab" onclick="irParaPaginaApp('rhColab')">👥 Colaboradores</div>
+        <div class="nav-item ativo" data-pagina="candidatos" onclick="irParaPaginaApp('candidatos')">📋 Candidatos</div>
         <div class="nav-item" data-pagina="rhRetencao" onclick="irParaPaginaApp('rhRetencao')">📈 Retenção &amp; Turnover</div>
         <div class="nav-item" data-pagina="rhLista" onclick="irParaPaginaApp('rhLista')">📄 Lista de Pessoas</div>
         <div class="nav-item" data-pagina="rhTreinamentos" onclick="irParaPaginaApp('rhTreinamentos')">🎓 Treinamentos</div>
@@ -99,6 +100,8 @@
         <button class="botao botao-secundario" onclick="sair()" style="width:100%">Sair</button>
       </div>
     </aside>
+
+    <button class="botao-abrir-sidebar" id="btnAbrirSidebar" onclick="alternarSidebar()" title="Mostrar menu" hidden>☰</button>
 
     <main class="principal-app">
 
