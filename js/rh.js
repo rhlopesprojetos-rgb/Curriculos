@@ -84,8 +84,11 @@ function obterColaboradoresFiltrados() {
   const situacao = document.getElementById('rhFiltroSituacao').value;
   const sexo = document.getElementById('rhFiltroSexo').value;
   const geracao = document.getElementById('rhFiltroGeracao').value;
-  const anoDe = document.getElementById('rhFiltroAnoDe').value;
-  const anoAte = document.getElementById('rhFiltroAnoAte').value;
+  const admissaoDe = document.getElementById('rhFiltroAnoDe').value;   // 'YYYY-MM-DD' ou ''
+  const admissaoAte = document.getElementById('rhFiltroAnoAte').value; // 'YYYY-MM-DD' ou ''
+
+  const limiteDe = admissaoDe ? new Date(admissaoDe + 'T00:00:00') : null;
+  const limiteAte = admissaoAte ? new Date(admissaoAte + 'T23:59:59') : null;
 
   return rhColaboradores.filter(c => {
     if (unidade && c.Unidade !== unidade) return false;
@@ -93,8 +96,14 @@ function obterColaboradoresFiltrados() {
     if (situacao && (c['Situação'] || '').trim() !== situacao) return false;
     if (sexo && (c.Sexo || 'Não informado') !== sexo) return false;
     if (geracao && c._geracao !== geracao) return false;
-    if (anoDe && c._anoAdmissao && c._anoAdmissao < Number(anoDe)) return false;
-    if (anoAte && c._anoAdmissao && c._anoAdmissao > Number(anoAte)) return false;
+
+    if (limiteDe || limiteAte) {
+      const dataAdmissao = rhParseData(c['Admissão']);
+      if (!dataAdmissao) return false; // sem data de admissão não entra num filtro de período
+      if (limiteDe && dataAdmissao < limiteDe) return false;
+      if (limiteAte && dataAdmissao > limiteAte) return false;
+    }
+
     return true;
   });
 }
