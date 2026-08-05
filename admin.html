@@ -261,7 +261,7 @@
             <input type="text" id="novaVagaTitulo" placeholder="Título da nova vaga">
             <button class="botao botao-primario" onclick="criarVaga()">Criar vaga</button>
           </div>
-          <textarea id="novaVagaDescricao" placeholder="Descrição da vaga (opcional — ajuda a IA a analisar melhor os candidatos)" style="width:100%; min-height:60px; margin-top:8px; padding:9px 12px; border:1px solid var(--cor-borda); border-radius:8px; font-size:13px; font-family:inherit; resize:vertical;"></textarea>
+          <textarea id="novaVagaDescricao" placeholder="Perfil profissional esperado (opcional) — descreva experiência, habilidades e requisitos que você espera do candidato. A IA usa esse texto pra avaliar os currículos dessa vaga." style="width:100%; min-height:70px; margin-top:8px; padding:9px 12px; border:1px solid var(--cor-borda); border-radius:8px; font-size:13px; font-family:inherit; resize:vertical;"></textarea>
           <div class="tabela-scroll">
             <table>
               <thead>
@@ -560,6 +560,22 @@
     <div class="acoes-modal">
       <button class="botao botao-secundario" onclick="fecharModal()">Cancelar</button>
       <button class="botao botao-primario" onclick="salvarEdicao()">Salvar alterações</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE PERFIL ESPERADO DA VAGA -->
+<div class="overlay-modal" id="modalPerfilVaga" hidden>
+  <div class="modal">
+    <h2>Perfil profissional esperado</h2>
+    <input type="hidden" id="perfilVagaId">
+    <p style="font-size:13px; color:var(--cor-texto-sec); margin:-8px 0 14px;">
+      Descreva experiência, habilidades e requisitos esperados para <strong id="perfilVagaTitulo"></strong>. A IA usa esse texto pra avaliar os currículos dessa vaga.
+    </p>
+    <textarea id="perfilVagaTexto" style="width:100%; min-height:140px; padding:10px 12px; border:1px solid var(--cor-borda); border-radius:8px; font-size:13px; font-family:inherit; resize:vertical;"></textarea>
+    <div class="acoes-modal" style="margin-top:16px;">
+      <button class="botao botao-secundario" onclick="fecharModalPerfilVaga()">Cancelar</button>
+      <button class="botao botao-primario" onclick="salvarPerfilVaga()">Salvar</button>
     </div>
   </div>
 </div>
