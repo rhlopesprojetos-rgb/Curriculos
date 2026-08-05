@@ -102,7 +102,7 @@ function validarEtapa(numero) {
   if (numero === 1) {
     camposObrigatorios = ['nome', 'telefone', 'email', 'nascDia', 'nascMes', 'nascAno', 'estado', 'cidade', 'bairro', 'veiculoProprio'];
   } else if (numero === 2) {
-    camposObrigatorios = ['disponibilidade', 'vaga', 'escolaridade', 'pretensaoSalarial'];
+    camposObrigatorios = ['disponibilidade', 'vaga', 'escolaridade', 'pretensaoSalarial', 'comoSoube'];
   }
 
   for (const id of camposObrigatorios) {
@@ -177,6 +177,7 @@ async function enviarFormulario(evento) {
         vaga: document.getElementById('vaga').value,
         escolaridade: document.getElementById('escolaridade').value,
         pretensaoSalarial: document.getElementById('pretensaoSalarial').value,
+        comoSoube: document.getElementById('comoSoube').value,
         consentimento
       },
       arquivo: {
@@ -195,9 +196,14 @@ async function enviarFormulario(evento) {
     const data = await resp.json();
 
     if (data.success) {
-      document.getElementById('cardFormulario').querySelector('form').hidden = true;
-      document.getElementById('barraEtapas').hidden = true;
-      document.getElementById('telaSucesso').hidden = false;
+      // Já capturamos o currículo — agora manda pro teste DISC em outra página.
+      // Se a pessoa desistir no meio do teste, os dados do currículo já estão salvos.
+      const params = new URLSearchParams({
+        candidato: data.candidatoId || '',
+        nome: document.getElementById('nome').value.trim(),
+        email: document.getElementById('email').value.trim()
+      });
+      window.location.href = 'teste-disc.html?' + params.toString();
     } else {
       mostrarErro(data.message || 'Não foi possível enviar seu cadastro. Tente novamente.');
     }

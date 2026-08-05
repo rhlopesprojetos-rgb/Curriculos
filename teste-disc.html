@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teste de Perfil Comportamental — Distribuidora Lopes</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/disc.css">
+</head>
+<body>
+
+<div class="pagina pagina-disc">
+
+  <div class="cabecalho">
+    <img src="img/logo.png" alt="Distribuidora Lopes">
+    <h1>Teste de Perfil Comportamental</h1>
+    <p>Já recebemos seu currículo! Agora, pra te conhecer melhor, responda esse teste rápido — leva uns 5 minutos.</p>
+  </div>
+
+  <div class="card-disc" id="cardIntro">
+    <p>Em cada uma das 40 perguntas abaixo, escolha a palavra que <strong>melhor te define</strong>. Não existe resposta certa ou errada — responda com o que vier primeiro à cabeça.</p>
+    <div class="progresso-disc">
+      <div class="progresso-disc-barra"><div class="progresso-disc-preenchido" id="progressoBarra"></div></div>
+      <span id="progressoTexto">0 de 40 respondidas</span>
+    </div>
+  </div>
+
+  <form id="formDisc">
+    <div id="listaPerguntas"></div>
+
+    <div class="mensagem-erro" id="mensagemErro"></div>
+
+    <div class="acoes-disc">
+      <button type="submit" class="botao botao-primario" id="botaoEnviarDisc">Enviar teste</button>
+    </div>
+  </form>
+
+  <div class="tela-sucesso" id="telaSucessoDisc" hidden>
+    <div class="icone-sucesso">&#10003;</div>
+    <h2>Teste concluído!</h2>
+    <p>Muito obrigado por responder. Já registramos tudo junto com o seu currículo — nossa equipe entrará em contato caso surja uma oportunidade compatível com o seu perfil.</p>
+  </div>
+
+</div>
+
+<div class="overlay-carregando" id="overlayCarregando">
+  <div class="spinner"></div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/disc.js"></script>
+</body>
+</html>
