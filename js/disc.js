@@ -337,6 +337,7 @@ async function enviarTeste(evento) {
       document.getElementById('cardIntro').hidden = true;
       document.getElementById('formDisc').hidden = true;
       document.getElementById('telaSucessoDisc').hidden = false;
+      if (data.perfil) renderizarGraficoPerfilDisc(data.perfil);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       mostrarErro(data.message || 'Não foi possível enviar o teste. Tente novamente.');
@@ -351,6 +352,29 @@ async function enviarTeste(evento) {
 }
 
 // ------------------------- HELPERS -------------------------
+
+function renderizarGraficoPerfilDisc(perfil) {
+  if (typeof Chart === 'undefined') return; // CDN pode falhar — não quebra a tela de sucesso
+
+  const dados = [
+    { rotulo: 'Influente', valor: perfil.influente, cor: '#E8410A' },
+    { rotulo: 'Dominante', valor: perfil.dominante, cor: '#1a2744' },
+    { rotulo: 'Conformidade', valor: perfil.conformidade, cor: '#f2a154' },
+    { rotulo: 'Estável', valor: perfil.estavel, cor: '#5b7fb8' }
+  ];
+
+  new Chart(document.getElementById('graficoPerfilDisc'), {
+    type: 'doughnut',
+    data: {
+      labels: dados.map(d => d.rotulo + ' (' + Math.round(d.valor * 100) + '%)'),
+      datasets: [{ data: dados.map(d => d.valor), backgroundColor: dados.map(d => d.cor) }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } }
+    }
+  });
+}
 
 function mostrarErro(msg) {
   const el = document.getElementById('mensagemErro');
