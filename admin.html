@@ -242,6 +242,7 @@
                   <th>Pretensão</th>
                   <th>Disponibilidade</th>
                   <th>Currículo</th>
+                  <th>Perfil DISC</th>
                   <th></th>
                 </tr>
               </thead>
@@ -576,6 +577,20 @@
     <div class="acoes-modal" style="margin-top:16px;">
       <button class="botao botao-secundario" onclick="fecharModalPerfilVaga()">Cancelar</button>
       <button class="botao botao-primario" onclick="salvarPerfilVaga()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE PERFIL DISC DO CANDIDATO -->
+<div class="overlay-modal" id="modalPerfilDisc" hidden>
+  <div class="modal">
+    <h2>Perfil comportamental (DISC)</h2>
+    <p style="font-size:13px; color:var(--cor-texto-sec); margin:-8px 0 14px;" id="perfilDiscCandidatoNome"></p>
+    <div style="max-width:280px; margin:0 auto 16px;">
+      <canvas id="graficoPerfilDiscModal"></canvas>
+    </div>
+    <div class="acoes-modal">
+      <button class="botao botao-secundario" onclick="fecharModalPerfilDisc()">Fechar</button>
     </div>
   </div>
 </div>
