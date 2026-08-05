@@ -285,6 +285,15 @@
             <h2>Análise por IA — <span id="analiseIaVagaNome"></span></h2>
           </div>
           <div id="analiseIaResultados"></div>
+
+          <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--cor-borda);">
+            <div class="secao-header"><h2 style="font-size:14px;">Perguntar sobre esses candidatos</h2></div>
+            <div id="chatIaMensagens" style="margin-bottom:12px; max-height:280px; overflow-y:auto;"></div>
+            <div class="form-inline">
+              <input type="text" id="chatIaPergunta" placeholder="Ex: qual tem mais experiência em vendas?" onkeydown="if(event.key==='Enter'){event.preventDefault();perguntarSobreCandidatos();}">
+              <button class="botao botao-primario" onclick="perguntarSobreCandidatos()">Perguntar</button>
+            </div>
+          </div>
         </div>
 
       </div>
