@@ -268,6 +268,8 @@ async function chamarBackend(payload, tentativas = 3) {
   }
 }
 
+let testesDisc = [];
+
 async function carregarCandidatos() {
   const resp = await chamarBackend({ action: 'listCandidatos' });
   if (!resp.success) {
@@ -276,6 +278,10 @@ async function carregarCandidatos() {
     return false;
   }
   candidatosOriginais = resp.candidatos || [];
+
+  const respDisc = await chamarBackend({ action: 'listarTestesDisc' });
+  testesDisc = respDisc.success ? (respDisc.testes || []) : [];
+
   return true;
 }
 
@@ -516,7 +522,13 @@ function renderizarTabela() {
   const corpo = document.getElementById('corpoTabela');
   document.getElementById('tabelaVazia').hidden = candidatosFiltrados.length !== 0;
 
-  corpo.innerHTML = pagina.map(c => `
+  corpo.innerHTML = pagina.map(c => {
+    const teste = testesDisc.find(t => t.CandidatoID === c.ID);
+    const celulaDisc = teste
+      ? `<button class="botao botao-secundario" onclick="abrirModalPerfilDisc('${c.ID}')">${escapeHtml(teste.PerfilPredominante || 'Ver')}</button>`
+      : '—';
+
+    return `
     <tr>
       <td>${escapeHtml(c.Nome || '')}</td>
       <td>${escapeHtml(c.Email || '')}</td>
@@ -528,9 +540,11 @@ function renderizarTabela() {
       <td>${formatarMoeda(parseFloat(c.PretensaoSalarial) || 0)}</td>
       <td>${escapeHtml(c.Disponibilidade || '')}</td>
       <td>${c.ArquivoURL ? `<a href="${c.ArquivoURL}" target="_blank" rel="noopener">Ver arquivo</a>` : '—'}</td>
+      <td>${celulaDisc}</td>
       <td><button class="botao botao-secundario" onclick="abrirModal('${c.ID}')">Editar</button></td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 
   renderizarPaginacao();
 }
@@ -732,6 +746,41 @@ async function salvarPerfilVaga() {
   } finally {
     mostrarCarregando(false);
   }
+}
+
+// ------------------------- PERFIL DISC DO CANDIDATO -------------------------
+
+let graficoPerfilDiscModal;
+
+function abrirModalPerfilDisc(candidatoId) {
+  const teste = testesDisc.find(t => t.CandidatoID === candidatoId);
+  if (!teste) return;
+
+  document.getElementById('perfilDiscCandidatoNome').textContent = teste.CandidatoNome || '';
+  document.getElementById('modalPerfilDisc').hidden = false;
+
+  const dados = [
+    { rotulo: 'Influente', valor: Number(teste.PercentualInfluente) || 0, cor: '#E8410A' },
+    { rotulo: 'Dominante', valor: Number(teste.PercentualDominante) || 0, cor: '#1a2744' },
+    { rotulo: 'Conformidade', valor: Number(teste.PercentualConformidade) || 0, cor: '#f2a154' },
+    { rotulo: 'Estável', valor: Number(teste.PercentualEstavel) || 0, cor: '#5b7fb8' }
+  ];
+
+  if (graficoPerfilDiscModal) graficoPerfilDiscModal.destroy();
+  if (typeof Chart === 'undefined') return;
+
+  graficoPerfilDiscModal = new Chart(document.getElementById('graficoPerfilDiscModal'), {
+    type: 'doughnut',
+    data: {
+      labels: dados.map(d => d.rotulo + ' (' + Math.round(d.valor * 100) + '%)'),
+      datasets: [{ data: dados.map(d => d.valor), backgroundColor: dados.map(d => d.cor) }]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } } }
+  });
+}
+
+function fecharModalPerfilDisc() {
+  document.getElementById('modalPerfilDisc').hidden = true;
 }
 
 // ------------------------- ANÁLISE DE CANDIDATOS POR IA -------------------------
