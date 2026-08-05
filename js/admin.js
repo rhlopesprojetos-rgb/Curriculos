@@ -801,9 +801,17 @@ async function analisarCandidatosPorVaga(vagaTitulo) {
   }
 }
 
+let vagaAnalisadaAtual = null;
+let conversaIa = [];
+
 function renderizarResultadoAnaliseIa(vagaTitulo, resultados, totalAnalisado, totalNaVaga) {
   document.getElementById('secaoAnaliseIa').hidden = false;
   document.getElementById('analiseIaVagaNome').textContent = vagaTitulo;
+
+  vagaAnalisadaAtual = vagaTitulo;
+  conversaIa = [];
+  document.getElementById('chatIaMensagens').innerHTML = '';
+  document.getElementById('chatIaPergunta').value = '';
 
   const aviso = totalAnalisado < totalNaVaga
     ? `<p class="vazio">Analisados os primeiros ${totalAnalisado} de ${totalNaVaga} candidatos dessa vaga (limite por análise).</p>`
@@ -820,6 +828,51 @@ function renderizarResultadoAnaliseIa(vagaTitulo, resultados, totalAnalisado, to
   `).join('');
 
   document.getElementById('secaoAnaliseIa').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ------------------------- CHAT DE PERGUNTAS SOBRE OS CANDIDATOS -------------------------
+
+async function perguntarSobreCandidatos() {
+  const input = document.getElementById('chatIaPergunta');
+  const pergunta = input.value.trim();
+  if (!pergunta || !vagaAnalisadaAtual) return;
+
+  input.value = '';
+  adicionarMensagemChatIa('voce', pergunta);
+  mostrarCarregando(true);
+
+  try {
+    const resp = await chamarBackend({
+      action: 'perguntarSobreCandidatosVaga',
+      vaga: vagaAnalisadaAtual,
+      pergunta,
+      historico: conversaIa
+    });
+
+    if (resp.success) {
+      conversaIa.push({ pergunta, resposta: resp.resposta });
+      adicionarMensagemChatIa('ia', resp.resposta);
+    } else {
+      adicionarMensagemChatIa('ia', resp.message || 'Não foi possível responder essa pergunta.');
+    }
+  } catch (err) {
+    adicionarMensagemChatIa('ia', 'Erro de conexão. Tente perguntar de novo.');
+  } finally {
+    mostrarCarregando(false);
+  }
+}
+
+function adicionarMensagemChatIa(quem, texto) {
+  const container = document.getElementById('chatIaMensagens');
+  const alinhamento = quem === 'voce' ? 'flex-end' : 'flex-start';
+  const fundo = quem === 'voce' ? 'var(--cor-fundo)' : '#fff';
+
+  container.innerHTML += `
+    <div style="display:flex; justify-content:${alinhamento}; margin-bottom:8px;">
+      <span style="background:${fundo}; border:1px solid var(--cor-borda); border-radius:10px; padding:8px 12px; max-width:80%; font-size:13px; line-height:1.5;">${escapeHtml(texto)}</span>
+    </div>
+  `;
+  container.scrollTop = container.scrollHeight;
 }
 
 async function mudarStatusVaga(id, status) {
