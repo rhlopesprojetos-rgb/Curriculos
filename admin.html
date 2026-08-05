@@ -261,6 +261,7 @@
             <input type="text" id="novaVagaTitulo" placeholder="Título da nova vaga">
             <button class="botao botao-primario" onclick="criarVaga()">Criar vaga</button>
           </div>
+          <textarea id="novaVagaDescricao" placeholder="Descrição da vaga (opcional — ajuda a IA a analisar melhor os candidatos)" style="width:100%; min-height:60px; margin-top:8px; padding:9px 12px; border:1px solid var(--cor-borda); border-radius:8px; font-size:13px; font-family:inherit; resize:vertical;"></textarea>
           <div class="tabela-scroll">
             <table>
               <thead>
@@ -275,6 +276,14 @@
             </table>
           </div>
           <div id="vagasVazio" class="vazio" hidden>Nenhuma vaga cadastrada ainda.</div>
+        </div>
+
+        <!-- RESULTADO DA ANÁLISE DE CANDIDATOS POR IA -->
+        <div class="secao" id="secaoAnaliseIa" hidden>
+          <div class="secao-header">
+            <h2>Análise por IA — <span id="analiseIaVagaNome"></span></h2>
+          </div>
+          <div id="analiseIaResultados"></div>
         </div>
 
       </div>

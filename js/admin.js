@@ -666,21 +666,26 @@ function renderizarVagas() {
         </select>
       </td>
       <td>${formatarData(v.DataCriacao)}</td>
-      <td><button class="botao botao-perigo" onclick="excluirVagaConfirma('${v.ID}')">Excluir</button></td>
+      <td style="white-space:nowrap;">
+        <button class="botao botao-secundario" onclick="analisarCandidatosPorVaga('${escapeHtml(v.Titulo)}')">🤖 Analisar</button>
+        <button class="botao botao-perigo" onclick="excluirVagaConfirma('${v.ID}')">Excluir</button>
+      </td>
     </tr>
   `).join('');
 }
 
 async function criarVaga() {
   const input = document.getElementById('novaVagaTitulo');
+  const inputDescricao = document.getElementById('novaVagaDescricao');
   const titulo = input.value.trim();
   if (!titulo) return;
 
   mostrarCarregando(true);
   try {
-    const resp = await chamarBackend({ action: 'createVaga', titulo });
+    const resp = await chamarBackend({ action: 'createVaga', titulo, descricao: inputDescricao.value.trim() });
     if (resp.success) {
       input.value = '';
+      inputDescricao.value = '';
       await carregarVagas();
     } else {
       alert(resp.message || 'Não foi possível criar a vaga.');
@@ -690,6 +695,45 @@ async function criarVaga() {
   } finally {
     mostrarCarregando(false);
   }
+}
+
+// ------------------------- ANÁLISE DE CANDIDATOS POR IA -------------------------
+
+async function analisarCandidatosPorVaga(vagaTitulo) {
+  mostrarCarregando(true);
+  try {
+    const resp = await chamarBackend({ action: 'analisarCandidatosVaga', vaga: vagaTitulo });
+    if (!resp.success) {
+      alert(resp.message || 'Não foi possível analisar os candidatos dessa vaga.');
+      return;
+    }
+    renderizarResultadoAnaliseIa(vagaTitulo, resp.resultados, resp.totalAnalisado, resp.totalNaVaga);
+  } catch (err) {
+    alert('Erro de conexão ao analisar candidatos. A análise por IA pode demorar um pouco mais que o normal — tente de novo.');
+  } finally {
+    mostrarCarregando(false);
+  }
+}
+
+function renderizarResultadoAnaliseIa(vagaTitulo, resultados, totalAnalisado, totalNaVaga) {
+  document.getElementById('secaoAnaliseIa').hidden = false;
+  document.getElementById('analiseIaVagaNome').textContent = vagaTitulo;
+
+  const aviso = totalAnalisado < totalNaVaga
+    ? `<p class="vazio">Analisados os primeiros ${totalAnalisado} de ${totalNaVaga} candidatos dessa vaga (limite por análise).</p>`
+    : '';
+
+  document.getElementById('analiseIaResultados').innerHTML = aviso + resultados.map((r, i) => `
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1px solid var(--cor-borda);">
+      <div>
+        <strong>${i + 1}. ${escapeHtml(r.nome || r.candidatoId || '')}</strong>
+        <div style="font-size:13px; color:var(--cor-texto-sec); margin-top:4px;">${escapeHtml(r.justificativa || '')}</div>
+      </div>
+      <div style="font-size:18px; font-weight:800; color:var(--cor-primaria); white-space:nowrap;">${r.nota}/10</div>
+    </div>
+  `).join('');
+
+  document.getElementById('secaoAnaliseIa').scrollIntoView({ behavior: 'smooth' });
 }
 
 async function mudarStatusVaga(id, status) {
