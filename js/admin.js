@@ -667,6 +667,7 @@ function renderizarVagas() {
       </td>
       <td>${formatarData(v.DataCriacao)}</td>
       <td style="white-space:nowrap;">
+        <button class="botao botao-secundario" onclick="abrirModalPerfilVaga('${v.ID}')">✏️ Perfil</button>
         <button class="botao botao-secundario" onclick="analisarCandidatosPorVaga('${escapeHtml(v.Titulo)}')">🤖 Analisar</button>
         <button class="botao botao-perigo" onclick="excluirVagaConfirma('${v.ID}')">Excluir</button>
       </td>
@@ -692,6 +693,42 @@ async function criarVaga() {
     }
   } catch (err) {
     alert('Erro de conexão ao criar vaga.');
+  } finally {
+    mostrarCarregando(false);
+  }
+}
+
+// ------------------------- PERFIL ESPERADO DA VAGA -------------------------
+
+function abrirModalPerfilVaga(vagaId) {
+  const v = vagas.find(x => x.ID === vagaId);
+  if (!v) return;
+
+  document.getElementById('perfilVagaId').value = v.ID;
+  document.getElementById('perfilVagaTitulo').textContent = v.Titulo || '';
+  document.getElementById('perfilVagaTexto').value = v.Descricao || '';
+  document.getElementById('modalPerfilVaga').hidden = false;
+}
+
+function fecharModalPerfilVaga() {
+  document.getElementById('modalPerfilVaga').hidden = true;
+}
+
+async function salvarPerfilVaga() {
+  const id = document.getElementById('perfilVagaId').value;
+  const descricao = document.getElementById('perfilVagaTexto').value.trim();
+
+  mostrarCarregando(true);
+  try {
+    const resp = await chamarBackend({ action: 'atualizarDescricaoVaga', id, descricao });
+    if (resp.success) {
+      fecharModalPerfilVaga();
+      await carregarVagas();
+    } else {
+      alert(resp.message || 'Não foi possível salvar o perfil esperado.');
+    }
+  } catch (err) {
+    alert('Erro de conexão ao salvar.');
   } finally {
     mostrarCarregando(false);
   }
